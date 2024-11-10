@@ -37,6 +37,8 @@ router.put("/addToWishlist", controller.addToWishlist);
 
 router.post("/login", services.login);
 
+router.post("/google-oauth", services.loginGoogleOAuth);
+
 router.post("/logout", sessionMiddleware, (req, res) => {
   req.session.destroy((err) => {
     if (err) {

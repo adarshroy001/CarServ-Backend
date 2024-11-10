@@ -54,8 +54,7 @@ app.post("/upload", (req, res) => {
 });
 
 // Replace with your MongoDB URI
-const mongoURI =
-  "mongodb+srv://detsup:webProject2023@cluster0.7gr3p.mongodb.net/LiveAutosDB";
+const mongoURI = process.env.MONGODB_URI;
 
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
