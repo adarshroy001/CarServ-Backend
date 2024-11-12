@@ -35,9 +35,15 @@ module.exports = {
         bookings: user.bookings,
       };
 
-      res
-        .status(200)
-        .json({ message: "Login successful", user: req.session.user });
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session:", err);
+          return res.status(500).json({ message: "Internal Server Error" });
+        }
+        return res
+          .status(200)
+          .json({ message: "Login successful", user: req.session.user });
+      });
     } catch (error) {
       console.error(error.message);
       res.status(500).json({ error: "Internal server error" });
@@ -68,12 +74,16 @@ module.exports = {
           bookings: newUser.bookings,
         };
 
-        return res
-          .status(200)
-          .json({
-            message: "Successfully created user",
+        req.session.save((err) => {
+          if (err) {
+            console.error("Error saving session:", err);
+            return res.status(500).json({ message: "Internal Server Error" });
+          }
+          return res.status(200).json({
+            message: "User successfully Registered",
             user: req.session.user,
           });
+        });
       }
 
       if (user.password) {
@@ -92,9 +102,15 @@ module.exports = {
           wishlist: user.wishlist,
           bookings: user.bookings,
         };
-        return res
-          .status(200)
-          .json({ message: "Login successful", user: req.session.user });
+        req.session.save((err) => {
+          if (err) {
+            console.error("Error saving session:", err);
+            return res.status(500).json({ message: "Internal Server Error" });
+          }
+          return res
+            .status(200)
+            .json({ message: "Login successful", user: req.session.user });
+        });
       }
     } catch (error) {
       console.error(error);

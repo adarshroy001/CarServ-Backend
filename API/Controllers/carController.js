@@ -1,16 +1,16 @@
 // Car model import
-const Car = require('../Models/carModel');
+const Car = require("../Models/carModel");
+const User = require("../Models/userModels");
+const { getStaticFilePath, getLocalPath } = require("../utils/helpers");
 
 // Function for creating a new car entry
 const createCar = async (req, res) => {
   try {
     // Extracting car details from the request body
-    const id = parseInt(Math.floor(Math.random() * 900) + 100);
     const {
       name,
       price,
       year,
-      description,
       datePosted,
       location,
       status,
@@ -27,17 +27,66 @@ const createCar = async (req, res) => {
       safety,
     } = req.body;
 
+    if (
+      !name ||
+      !price ||
+      !year ||
+      !datePosted ||
+      !location ||
+      !status ||
+      !condition ||
+      !transmission ||
+      !fuel ||
+      !color ||
+      !mileage ||
+      !bodyType ||
+      !engine ||
+      !VIN ||
+      !exterior ||
+      !interior ||
+      !safety
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const exteriorArray = JSON.parse(exterior);
+    const interiorArray = JSON.parse(interior);
+    const safetyArray = JSON.parse(safety);
+    const locationObj = JSON.parse(location);
+    const datePostedDate = new Date(datePosted);
+
+    if (
+      !locationObj ||
+      (!exteriorArray && !exteriorArray.length) ||
+      (!interiorArray && !interiorArray.length) ||
+      (!safetyArray && !safetyArray.length)
+    ) {
+      return res.status(400).json({ message: "Invalid fields" });
+    }
+
     // Extracting the filenames of uploaded images from req.files array
+    const images =
+      req.files && req.files.length
+        ? req.files.map((image) => {
+            const imageUrl = getStaticFilePath(req, image.filename);
+            const imageLocalPath = getLocalPath(image.filename);
+            return { url: imageUrl, localPath: imageLocalPath };
+          })
+        : [];
+
+    if (!images && images.length === 0) {
+      return res.status(400).json({ message: "Atleast one image is required" });
+    }
+
+    const user = req.session.user._id;
 
     // Creating a new car object with details and images
     const newCar = await Car.create({
-      id,
       name,
       price,
       year,
-      description,
-      datePosted,
-      location,
+      datePosted: datePostedDate,
+      location: locationObj,
       status,
       condition,
       transmission,
@@ -47,15 +96,19 @@ const createCar = async (req, res) => {
       bodyType,
       engine,
       VIN,
-      exterior,
-      interior,
-      safety,
+      exterior: exteriorArray,
+      interior: interiorArray,
+      safety: safetyArray,
+      images,
     });
 
-    res.status(201).json(newCar);
+    // Adding car in the user listings
+    await User.updateOne({ _id: user }, { $push: { listings: newCar._id } });
+
+    res.status(201).json({ message: "Car added successfully", car: newCar });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -90,7 +143,7 @@ const updateCar = async (req, res) => {
 
     // Updating the car object with details and images
     const updatedCar = await Car.updateOne(
-      { id: req.params.id},
+      { id: req.params.id },
       {
         $set: {
           name,
@@ -110,16 +163,16 @@ const updateCar = async (req, res) => {
           VIN,
           exterior,
           interior,
-          safety
-        }
+          safety,
+        },
       },
       { new: true }
     );
 
     res.status(200).json(updatedCar);
   } catch (error) {
-    console.error('Update Car Error:', error);
-    res.status(500).json({ message: 'Error updating car details' });
+    console.error("Update Car Error:", error);
+    res.status(500).json({ message: "Error updating car details" });
   }
 };
 
@@ -130,13 +183,13 @@ const deleteCar = async (req, res) => {
     const deletedCar = await Car.deleteOne({ id: req.params.id });
 
     if (deletedCar.deletedCount === 0) {
-      return res.status(404).json({ message: 'Car not found' });
+      return res.status(404).json({ message: "Car not found" });
     }
 
-    res.status(200).send({ message: `Successfully deleted ${req.params.id}`}); // 204 No Content indicates successful deletion
+    res.status(200).send({ message: `Successfully deleted ${req.params.id}` }); // 204 No Content indicates successful deletion
   } catch (error) {
-    console.error('Delete Car Error:', error);
-    res.status(500).json({ message: 'Error in car deletion' });
+    console.error("Delete Car Error:", error);
+    res.status(500).json({ message: "Error in car deletion" });
   }
 };
 
@@ -146,8 +199,8 @@ const getAllCars = async (req, res) => {
     const carList = await Car.find({});
     res.status(200).json(carList);
   } catch (error) {
-    console.error('Get All Cars Error:', error);
-    res.status(500).json({ message: 'Error retrieving cars' });
+    console.error("Get All Cars Error:", error);
+    res.status(500).json({ message: "Error retrieving cars" });
   }
 };
 

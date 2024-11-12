@@ -1,10 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const carSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-  },
   name: {
     type: String,
     required: true,
@@ -51,7 +47,7 @@ const carSchema = new mongoose.Schema({
     required: true,
   },
   mileage: {
-    type: Number,
+    type: String,
     required: true,
   },
   bodyType: {
@@ -70,12 +66,16 @@ const carSchema = new mongoose.Schema({
   interior: [String],
   safety: [String],
   images: {
-    type: [String],
-    default: ['../images/car1.jpg', '../images/car2.jpg', '../images/car3.jpg'],
+    type: [
+      {
+        url: String,
+        localPath: String,
+      },
+    ],
   },
   soldTo: [Number],
 });
 
-const Car = mongoose.model('Car', carSchema);
+const Car = mongoose.model("Car", carSchema);
 
 module.exports = Car;

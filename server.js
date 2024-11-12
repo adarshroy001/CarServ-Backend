@@ -4,57 +4,50 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const session = require("express-session"); // Add this line
+const MongoDBSession = require("connect-mongodb-session")(session);
 const path = require("path");
+const dotenv = require("dotenv");
+
 const userRoutes = require("./API/Routes/userRoutes");
 const carsRoutes = require("./API/Routes/carRoutes");
 const bookingsRoutes = require("./API/Routes/BookingRoutes");
-const dotenv = require("dotenv");
 
 dotenv.config();
 const app = express();
-app.use(bodyParser.json());
-app.use(cors());
+const mongoURI = process.env.MONGODB_URI;
 
-// Set up multer for handling file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // specify the upload directory
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname); // create a unique filename
-  },
+const store = new MongoDBSession({
+  uri: mongoURI,
+  collection: "sessions",
 });
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static("public"));
 
 app.use(
   session({
     secret: "emqlfqlekfm1354554w5f7e5", // Change this to a strong, random string
     resave: false,
     saveUninitialized: false,
+    // cookie: {
+    //   secure: process.env.NODE_ENV === "production", // Adjust the secure option based on your deployment environment
+    //   maxAge: 1000 * 3600 * 24 * 7,
+    // },
+    store,
   })
 );
-
-const upload = multer({ storage }).array("images", 5); // 'images' is the field name for multiple file uploads
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Change this to the appropriate URL for your application
+    credentials: true, // Enable cookies for session management
+  })
+);
 
 // routes
 app.use("/users", userRoutes);
 app.use("/cars", carsRoutes);
 app.use("/bookings", bookingsRoutes);
-
-// Route to handle multiple image uploads
-app.post("/upload", (req, res) => {
-  upload(req, res, (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
-
-    const filenames = req.files.map((file) => file.filename);
-    res.json({ filenames });
-  });
-});
-
-// Replace with your MongoDB URI
-const mongoURI = process.env.MONGODB_URI;
 
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })

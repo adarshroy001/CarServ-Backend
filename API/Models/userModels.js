@@ -55,6 +55,12 @@ const userSchema = new mongoose.Schema({
     type: [Number],
     default: [],
   },
+  listings: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Car",
+    },
+  ],
 });
 
 userSchema.pre("save", async function (next) {
