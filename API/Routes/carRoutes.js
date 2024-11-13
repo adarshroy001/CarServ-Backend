@@ -15,12 +15,23 @@ router.post(
 );
 
 // Update car details
-router.put("/edit/:id", carController.updateCar);
+router.put(
+  "/edit/:id",
+  // isAuthenticated,
+  upload.array("images"),
+  carController.updateCar
+);
 
 // Delete car by id
 router.delete("/delete/:id", carController.deleteCar);
 
+// Fetch a car
+router.get("/:id", carController.getCar);
+
 // Get all cars
 router.get("/getAll", carController.getAllCars);
+
+// Get latest cars
+router.get("/getLatest", carController.getLatest);
 
 module.exports = router;

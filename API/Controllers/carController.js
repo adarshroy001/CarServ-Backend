@@ -2,6 +2,8 @@
 const Car = require("../Models/carModel");
 const User = require("../Models/userModels");
 const { getStaticFilePath, getLocalPath } = require("../utils/helpers");
+const fs = require("fs");
+const path = require("path");
 
 // Function for creating a new car entry
 const createCar = async (req, res) => {
@@ -115,7 +117,8 @@ const createCar = async (req, res) => {
 // Controller function to update car details
 const updateCar = async (req, res) => {
   try {
-    console.log(req.body);
+    console.log(req.body, req.files);
+    const carId = req.params.id;
     // Extracting car details from the request body
     const {
       name,
@@ -136,43 +139,127 @@ const updateCar = async (req, res) => {
       exterior,
       interior,
       safety,
+      removedImages,
     } = req.body;
 
-    // Extracting the filenames of uploaded images from req.files array
-    // const images = req.files.map((file) => file.filename);
+    if (
+      !name ||
+      !price ||
+      !year ||
+      !datePosted ||
+      !location ||
+      !status ||
+      !condition ||
+      !transmission ||
+      !fuel ||
+      !color ||
+      !mileage ||
+      !bodyType ||
+      !engine ||
+      !VIN ||
+      !exterior ||
+      !interior ||
+      !safety
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-    // Updating the car object with details and images
-    const updatedCar = await Car.updateOne(
-      { id: req.params.id },
-      {
-        $set: {
-          name,
-          price,
-          year,
-          description,
-          datePosted,
-          location,
-          status,
-          condition,
-          transmission,
-          fuel,
-          color,
-          mileage,
-          bodyType,
-          engine,
-          VIN,
-          exterior,
-          interior,
-          safety,
-        },
-      },
-      { new: true }
+    const exteriorArray = JSON.parse(exterior);
+    const interiorArray = JSON.parse(interior);
+    const safetyArray = JSON.parse(safety);
+    const locationObj = JSON.parse(location);
+    const datePostedDate = new Date(datePosted);
+    const removedImagesArray = JSON.parse(removedImages);
+
+    if (
+      !locationObj ||
+      (!exteriorArray && !exteriorArray.length) ||
+      (!interiorArray && !interiorArray.length) ||
+      (!safetyArray && !safetyArray.length)
+    ) {
+      return res.status(400).json({ message: "Invalid fields" });
+    }
+
+    const car = await Car.findById(carId);
+
+    if (!car) {
+      return res.status(404).json({ message: "Car not found" });
+    }
+
+    const remainingImages = car.images.filter(
+      (image) => !removedImagesArray.includes(image.localPath)
     );
 
-    res.status(200).json(updatedCar);
+    for (const localPath of removedImagesArray) {
+      const imageToRemove = car.images.find(
+        (image) => image.localPath === localPath
+      );
+      if (imageToRemove && imageToRemove.localPath) {
+        const filePath = path.join(
+          __dirname,
+          "..",
+          "..",
+          imageToRemove.localPath
+        );
+        fs.unlink(filePath, (err) => {
+          if (err) console.log("Error while removing local files: ", err);
+          else {
+            console.log("Removed local: ", localPath);
+          }
+        });
+      }
+    }
+
+    const newImages =
+      req.files && req.files.length
+        ? req.files.map((image) => {
+            const imageUrl = getStaticFilePath(req, image.filename);
+            const imageLocalPath = getLocalPath(image.filename);
+            return { url: imageUrl, localPath: imageLocalPath };
+          })
+        : [];
+
+    // Updating the car object with details and images
+    car.images = [...remainingImages, ...newImages];
+    car.name = name;
+    car.price = price;
+    car.year = year;
+    car.datePosted = datePostedDate;
+    car.location = locationObj;
+    car.status = status;
+    car.condition = condition;
+    car.transmission = transmission;
+    car.fuel = fuel;
+    car.color = color;
+    car.mileage = mileage;
+    car.bodyType = bodyType;
+    car.engine = engine;
+    car.VIN = VIN;
+    car.exterior = exteriorArray;
+    car.interior = interiorArray;
+    car.safety = safetyArray;
+
+    await car.save();
+
+    res.status(200).json(car);
   } catch (error) {
     console.error("Update Car Error:", error);
     res.status(500).json({ message: "Error updating car details" });
+  }
+};
+
+// Controller function to fetch a car
+const getCar = async (req, res) => {
+  try {
+    const carId = req.params.id;
+    const car = await Car.findById(carId);
+    if (!car) {
+      return res.status(404).json({ message: "Car not found" });
+    }
+    res.status(200).json(car);
+  } catch (error) {
+    console.error("Get Car Error:", error);
+    res.status(500).json({ message: "Error fetching car" });
   }
 };
 
@@ -204,9 +291,22 @@ const getAllCars = async (req, res) => {
   }
 };
 
+// Function to retrieve latest cars
+const getLatest = async (req, res) => {
+  try {
+    const latestCars = await Car.find({}).sort({ datePosted: -1 }).limit(4);
+    res.status(200).json(latestCars);
+  } catch (error) {
+    console.error("Get Latest Cars Error:", error);
+    res.status(500).json({ message: "Error retrieving latest cars" });
+  }
+};
+
 module.exports = {
   createCar,
   updateCar,
   deleteCar,
   getAllCars,
+  getLatest,
+  getCar,
 };
