@@ -17,6 +17,8 @@ router.put("/editUser", controller.updateUserInfo);
 // Delete user by email
 router.delete("/deleteUser/:email", controller.deleteUser);
 
+router.get("/", isAuthenticated, controller.getUser);
+
 // Get all users (full name, email, and hashed password)
 router.get("/getAll", controller.getAllUsers);
 

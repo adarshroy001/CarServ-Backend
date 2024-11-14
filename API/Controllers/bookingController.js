@@ -1,13 +1,23 @@
 // Booking model import
+const { default: mongoose } = require("mongoose");
 const Booking = require("../Models/bookingModel");
 
 // Function to handle new booking creation
 const createBooking = async (req, res) => {
   try {
-    const bookingDetails = req.body;
-    const booking = new Booking(bookingDetails);
-    const savedBooking = await booking.save();
-    res.status(201).json(savedBooking);
+    const { carid, date, status } = req.body;
+
+    if (!carid || !date || !status) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const booking = await Booking.create({
+      userid: req.session.user._id,
+      carid,
+      date: new Date(date),
+      status,
+    });
+    res.status(201).json(booking);
   } catch (error) {
     console.error("Error in createBooking:", error);
     res.status(500).json({ message: "Error creating booking" });
@@ -19,7 +29,11 @@ const updateBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
     const bookingUpdates = req.body;
-    const updatedBooking = await Booking.findByIdAndUpdate(bookingId, bookingUpdates, { new: true });
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      bookingId,
+      bookingUpdates,
+      { new: true }
+    );
     res.status(200).json(updatedBooking);
   } catch (error) {
     console.error("Error in updateBooking:", error);
@@ -42,8 +56,23 @@ const deleteBooking = async (req, res) => {
 // Function to retrieve all bookings
 const getAllBookings = async (req, res) => {
   try {
-    const allBookings = await Booking.find({});
-    res.status(200).json(allBookings);
+    const allBookings = await Booking.find({
+      userid: req.session.user._id,
+    })
+      .populate({
+        path: "carid",
+        select: "name status condition location",
+      })
+      .exec();
+
+    const updatedBookings = allBookings.map((booking) => {
+      const { carid, ...rest } = booking.toObject();
+      return {
+        ...rest,
+        car: carid,
+      };
+    });
+    res.status(200).json(updatedBookings);
   } catch (error) {
     console.error("Error in getAllBookings:", error);
     res.status(500).json({ message: "Error fetching bookings" });
@@ -56,7 +85,7 @@ const getBookingById = async (req, res) => {
     const bookingId = req.params.id; // Assuming 'id' is the parameter in your route
     console.log(bookingId);
 
-    const booking = await Booking.findOne({carid: bookingId});
+    const booking = await Booking.findOne({ carid: bookingId });
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
@@ -69,10 +98,38 @@ const getBookingById = async (req, res) => {
   }
 };
 
+// Function to get a specific car bookings
+const getCarBookings = async (req, res) => {
+  try {
+    const carId = req.params.id;
+
+    const bookings = await Booking.find({ carid: carId })
+      .populate({
+        path: "userid",
+        select: "username _id",
+      })
+      .exec();
+
+    const updatedBookings = bookings.map((booking) => {
+      const { userid, ...rest } = booking.toObject();
+      return {
+        ...rest,
+        user: userid,
+      };
+    });
+
+    return res.status(200).json(updatedBookings);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error fetching booking by carId" });
+  }
+};
+
 module.exports = {
   createBooking,
   updateBooking,
   deleteBooking,
   getAllBookings,
   getBookingById,
+  getCarBookings,
 };

@@ -102,6 +102,7 @@ const createCar = async (req, res) => {
       interior: interiorArray,
       safety: safetyArray,
       images,
+      owner: req.session.user._id,
     });
 
     // Adding car in the user listings

@@ -87,6 +87,19 @@ module.exports = {
     }
   },
 
+  getUser: async (req, res) => {
+    try {
+      const user = await User.findById(req.session.user._id);
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      return res.status(200).json(user);
+    } catch (error) {
+      return res.status(500).json({ message: "Error fetching user" });
+    }
+  },
+
   updateUserInfo: async (req, res) => {
     const { email, gender, phone, address } = req.body;
     const foundUser = await User.findOne({ email });
