@@ -12,7 +12,7 @@ router.post("/create", controller.createUser);
 // Update user details (full name and password)
 router.put("/edit", controller.updateUser);
 
-router.put("/editUser", controller.updateUserInfo);
+router.put("/editUser", isAuthenticated, controller.updateUserInfo);
 
 // Delete user by email
 router.delete("/deleteUser/:email", controller.deleteUser);
@@ -22,11 +22,15 @@ router.get("/", isAuthenticated, controller.getUser);
 // Get all users (full name, email, and hashed password)
 router.get("/getAll", controller.getAllUsers);
 
-router.post("/getWishlist", controller.getWishlist);
+router.get("/getWishlist", isAuthenticated, controller.getWishlist);
 
-router.put("/deleteFromWishlist", controller.deleteFromWishlist);
+router.put(
+  "/deleteFromWishlist",
+  isAuthenticated,
+  controller.deleteFromWishlist
+);
 
-router.put("/addToWishlist", controller.addToWishlist);
+router.put("/addToWishlist", isAuthenticated, controller.addToWishlist);
 
 router.post("/login", services.login);
 

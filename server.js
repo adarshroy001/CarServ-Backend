@@ -39,7 +39,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: "http://localhost:3000", // Change this to the appropriate URL for your application
+    origin: process.env.CLIENT_SIDE_URL, // Change this to the appropriate URL for your application
     credentials: true, // Enable cookies for session management
   })
 );

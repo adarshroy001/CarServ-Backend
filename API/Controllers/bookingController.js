@@ -52,8 +52,8 @@ const updateBooking = async (req, res) => {
 const deleteBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    await Booking.findByIdAndRemove(bookingId);
-    res.status(204).send();
+    await Booking.findByIdAndDelete(bookingId);
+    res.status(200).json({ message: "Booking deleted successfully" });
   } catch (error) {
     console.error("Error in deleteBooking:", error);
     res.status(500).json({ message: "Error deleting booking" });
@@ -135,6 +135,30 @@ const getCarBookings = async (req, res) => {
   }
 };
 
+// Function to get user's bookings
+const getUserBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ userid: req.session.user._id })
+      .populate({
+        path: "userid",
+        select: "-password",
+        model: User,
+        as: "user",
+      })
+      .populate({
+        path: "carid",
+        model: Car,
+        as: "car",
+      })
+      .exec();
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.error("Error fetching user's bookings", error);
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+};
+
 module.exports = {
   createBooking,
   updateBooking,
@@ -142,4 +166,5 @@ module.exports = {
   getAllBookings,
   getBookingById,
   getCarBookings,
+  getUserBookings,
 };

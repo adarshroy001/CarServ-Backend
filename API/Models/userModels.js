@@ -47,10 +47,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  wishlist: {
-    type: [Number],
-    default: [],
-  },
+  wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Car",
+    },
+  ],
   bookings: [
     {
       type: mongoose.Schema.Types.ObjectId,

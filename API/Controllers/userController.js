@@ -101,13 +101,14 @@ module.exports = {
   },
 
   updateUserInfo: async (req, res) => {
-    const { email, gender, phone, address } = req.body;
-    const foundUser = await User.findOne({ email });
     try {
+      const { username, gender, phone, address } = req.body;
+      const foundUser = await User.findById(req.session.user._id);
       if (!foundUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
+      foundUser.username = username;
       foundUser.gender = gender;
       foundUser.phone = phone;
       foundUser.address = address;
@@ -115,6 +116,7 @@ module.exports = {
       await foundUser.save();
       return res.status(200).json({ message: "User info updated" });
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: "Error updating user info" });
     }
   },
@@ -148,23 +150,19 @@ module.exports = {
 
   getWishlist: async (req, res) => {
     try {
-      const { email } = req.body;
+      const userId = req.session.user._id;
 
-      console.log(email);
-
-      // Find the user by email
-      const user = await User.findOne({ email });
+      const user = await User.findById(userId).populate({
+        path: "wishlist",
+        model: Car,
+      });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      console.log(user.wishlist);
-      // Find bookings based on wishlist IDs
-      const wishlist = await Car.find({ id: { $in: user.wishlist } });
-      console.log(wishlist);
-
-      res.json(wishlist);
+      const wishlist = user.wishlist.map((car) => car);
+      res.status(200).json(wishlist);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error in retrieving user wishlist" });
@@ -172,30 +170,45 @@ module.exports = {
   },
 
   addToWishlist: async (req, res) => {
-    const { email, wishlistId } = req.body;
-    const foundUser = await User.findOne({ email });
-    if (!foundUser) {
-      return res.status(404).json({ message: "User not found" });
+    try {
+      const { wishlistId } = req.body;
+      const foundUser = await User.findById(req.session.user._id);
+      if (!foundUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      foundUser.wishlist = [
+        ...foundUser.wishlist,
+        new mongoose.Types.ObjectId(wishlistId),
+      ];
+
+      await foundUser.save();
+      return res.status(200).json({ message: "Car added to wishlist" });
+    } catch (error) {
+      console.error("Error adding to whishlist", error);
+      res.status(500).json({ message: "Error in adding car to wishlist" });
     }
-
-    foundUser.wishlist = [...foundUser.wishlist, wishlistId];
-
-    await foundUser.save();
-    return res.status(200).json({ message: "Car added to wishlist" });
   },
 
   deleteFromWishlist: async (req, res) => {
-    const { email, wishlistId } = req.body;
-    const foundUser = await User.findOne({ email });
-    if (!foundUser) {
-      return res.status(404).json({ message: "User not found" });
+    try {
+      const { carId } = req.body;
+      const foundUser = await User.findById(req.session.user._id);
+      if (!foundUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const newArray = foundUser.wishlist.filter(
+        (item) => item.toString() !== carId.toString()
+      );
+
+      foundUser.wishlist = newArray;
+
+      await foundUser.save();
+      return res.status(200).json({ message: "Car removed from wishlist" });
+    } catch (error) {
+      console.error("Error removing item from wishlist", error);
+      res.status(500).json({ message: "Error in removing car from wishlist" });
     }
-
-    const newArray = foundUser.wishlist.filter((item) => item !== wishlistId);
-
-    foundUser.wishlist = newArray;
-
-    await foundUser.save();
-    return res.status(200).json({ message: "Car removed from wishlist" });
   },
 };

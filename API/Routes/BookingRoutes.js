@@ -8,15 +8,22 @@ const isAuthenticated = require("../middlewares/authentication.js");
 router.post("/create", isAuthenticated, bookingController.createBooking);
 
 // Update booking details
-router.put("/edit/:id", bookingController.updateBooking);
+router.put("/edit/:id", isAuthenticated, bookingController.updateBooking);
 
 // Delete booking by id
-router.delete("/delete/:id", bookingController.deleteBooking);
+router.delete("/:id", isAuthenticated, bookingController.deleteBooking);
 
 // Get all bookings
 router.get("/getAll", isAuthenticated, bookingController.getAllBookings);
 
 router.get("/getBooking/:id", bookingController.getBookingById);
+
+// Get all bookings for a specific user
+router.get(
+  "/getMyBookings",
+  isAuthenticated,
+  bookingController.getUserBookings
+);
 
 // Get a specific car bookings
 router.get("/:id", bookingController.getCarBookings);
