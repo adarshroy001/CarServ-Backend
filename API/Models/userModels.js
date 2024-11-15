@@ -51,10 +51,12 @@ const userSchema = new mongoose.Schema({
     type: [Number],
     default: [],
   },
-  bookings: {
-    type: [Number],
-    default: [],
-  },
+  bookings: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
+    },
+  ],
   listings: [
     {
       type: mongoose.Schema.Types.ObjectId,

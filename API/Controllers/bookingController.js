@@ -1,6 +1,8 @@
 // Booking model import
 const { default: mongoose } = require("mongoose");
 const Booking = require("../Models/bookingModel");
+const Car = require("../Models/carModel");
+const User = require("../Models/userModels");
 
 // Function to handle new booking creation
 const createBooking = async (req, res) => {
@@ -28,10 +30,15 @@ const createBooking = async (req, res) => {
 const updateBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    const bookingUpdates = req.body;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
     const updatedBooking = await Booking.findByIdAndUpdate(
       bookingId,
-      bookingUpdates,
+      { status },
       { new: true }
     );
     res.status(200).json(updatedBooking);
@@ -56,23 +63,26 @@ const deleteBooking = async (req, res) => {
 // Function to retrieve all bookings
 const getAllBookings = async (req, res) => {
   try {
-    const allBookings = await Booking.find({
-      userid: req.session.user._id,
-    })
-      .populate({
-        path: "carid",
-        select: "name status condition location",
-      })
-      .exec();
+    const userId = req.session.user._id;
 
-    const updatedBookings = allBookings.map((booking) => {
-      const { carid, ...rest } = booking.toObject();
-      return {
-        ...rest,
-        car: carid,
-      };
-    });
-    res.status(200).json(updatedBookings);
+    // Find all cars listed by the logged-in user
+    const userCars = await Car.find({ owner: userId });
+
+    // Extract car IDs from the user's cars
+    const carIds = userCars.map((car) => car._id);
+
+    // Find all bookings where the car ID matches any of the user's cars
+    const bookings = await Booking.find({ carid: { $in: carIds } })
+      .populate({
+        path: "userid",
+        select: "-password",
+        model: User,
+        as: "user",
+      }) // Populate 'userid' with user details
+      .populate({ path: "carid", model: Car, as: "car" }); // Populate 'carid' with car details
+
+    // Return the bookings as a response
+    res.status(200).json(bookings);
   } catch (error) {
     console.error("Error in getAllBookings:", error);
     res.status(500).json({ message: "Error fetching bookings" });
