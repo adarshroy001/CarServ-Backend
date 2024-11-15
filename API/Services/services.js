@@ -84,6 +84,7 @@ module.exports = {
             user: req.session.user,
           });
         });
+        return;
       }
 
       if (user.password) {
