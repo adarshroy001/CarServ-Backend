@@ -53,13 +53,11 @@ module.exports = {
 
   updateUser: async (req, res) => {
     try {
-      const { oldPassword, newPassword, email } = req.body;
+      const { oldPassword, newPassword } = req.body;
 
       console.log(oldPassword, newPassword);
 
-      console.log(email);
-
-      const foundUser = await User.findOne({ email });
+      const foundUser = await User.findById(req.session.user._id);
 
       if (!foundUser) {
         return res.status(404).json({ message: "User not located" });
@@ -123,9 +121,9 @@ module.exports = {
 
   deleteUser: async (req, res) => {
     try {
-      const { email } = req.params;
-
-      const userForDeletion = await User.findOneAndDelete({ email });
+      const userForDeletion = await User.findByIdAndDelete(
+        req.session.user._id
+      );
 
       console.log("Delete User", req.body);
 
@@ -209,6 +207,26 @@ module.exports = {
     } catch (error) {
       console.error("Error removing item from wishlist", error);
       res.status(500).json({ message: "Error in removing car from wishlist" });
+    }
+  },
+
+  validatePassword: async (req, res) => {
+    try {
+      const user = await User.findById(req.session.user._id);
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const { password } = req.body;
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if (isPasswordValid) {
+        return res.status(200).json({ message: "Password is valid" });
+      } else {
+        return res.status(401).json({ message: "Invalid password" });
+      }
+    } catch (error) {
+      console.error("Error validating password", error);
+      res.status(500).json({ message: "Error in validating password" });
     }
   },
 };

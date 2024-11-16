@@ -59,6 +59,7 @@ module.exports = {
         const newUser = new User({
           username,
           email,
+          gender: "Other",
         });
         await newUser.save();
 

@@ -10,12 +10,12 @@ const router = express.Router();
 router.post("/create", controller.createUser);
 
 // Update user details (full name and password)
-router.put("/edit", controller.updateUser);
+router.put("/edit", isAuthenticated, controller.updateUser);
 
 router.put("/editUser", isAuthenticated, controller.updateUserInfo);
 
 // Delete user by email
-router.delete("/deleteUser/:email", controller.deleteUser);
+router.delete("/", isAuthenticated, controller.deleteUser);
 
 router.get("/", isAuthenticated, controller.getUser);
 
@@ -31,6 +31,8 @@ router.put(
 );
 
 router.put("/addToWishlist", isAuthenticated, controller.addToWishlist);
+
+router.put("/validatePassword", isAuthenticated, controller.validatePassword);
 
 router.post("/login", services.login);
 
