@@ -30,10 +30,12 @@ app.use(
     secret: "emqlfqlekfm1354554w5f7e5", // Change this to a strong, random string
     resave: false,
     saveUninitialized: false,
-    // cookie: {
-    //   secure: process.env.NODE_ENV === "production", // Adjust the secure option based on your deployment environment
-    //   maxAge: 1000 * 3600 * 24 * 7,
-    // },
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Adjust the secure option based on your deployment environment
+      maxAge: 1000 * 3600 * 24 * 7,
+      httpOnly: true, // Don't expose the session ID to the client-side JavaScript
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    },
     store,
   })
 );
