@@ -31,7 +31,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true, // Adjust the secure option based on your deployment environment
+      secure: false, // Adjust the secure option based on your deployment environment
       maxAge: 1000 * 3600 * 24 * 7,
       httpOnly: true, // Don't expose the session ID to the client-side JavaScript
       sameSite: "none",
