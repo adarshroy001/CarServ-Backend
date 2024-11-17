@@ -31,10 +31,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Adjust the secure option based on your deployment environment
+      secure: false, // Adjust the secure option based on your deployment environment
       maxAge: 1000 * 3600 * 24 * 7,
       httpOnly: true, // Don't expose the session ID to the client-side JavaScript
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "none",
     },
     store,
   })
