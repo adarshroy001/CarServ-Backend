@@ -25,16 +25,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
+app.set("trust proxy", 1);
+
 app.use(
   session({
     secret: "emqlfqlekfm1354554w5f7e5", // Change this to a strong, random string
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // Adjust the secure option based on your deployment environment
+      secure: true, // Adjust the secure option based on your deployment environment
       maxAge: 1000 * 3600 * 24 * 7,
       httpOnly: true, // Don't expose the session ID to the client-side JavaScript
-      sameSite: "lax",
+      sameSite: "none",
     },
     store,
   })
