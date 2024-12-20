@@ -1,11 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const multer = require("multer");
-const session = require("express-session"); // Add this line
+const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
-const path = require("path");
 const dotenv = require("dotenv");
 
 const userRoutes = require("./API/Routes/userRoutes");
@@ -29,22 +26,23 @@ app.set("trust proxy", 1);
 
 app.use(
   session({
-    secret: "emqlfqlekfm1354554w5f7e5", // Change this to a strong, random string
+    secret: "emqlfqlekfm1354554w5f7e5",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true, // Adjust the secure option based on your deployment environment
+      secure: process.env.NODE_ENV === "production",
       maxAge: 1000 * 3600 * 24 * 7,
-      httpOnly: true, // Don't expose the session ID to the client-side JavaScript
-      sameSite: "none",
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
     store,
   })
 );
+
 app.use(
   cors({
-    origin: process.env.CLIENT_SIDE_URL, // Change this to the appropriate URL for your application
-    credentials: true, // Enable cookies for session management
+    origin: process.env.CLIENT_SIDE_URL,
+    credentials: true,
   })
 );
 
@@ -53,13 +51,28 @@ app.use("/users", userRoutes);
 app.use("/cars", carsRoutes);
 app.use("/bookings", bookingsRoutes);
 
+app.get("/test-db", async (req, res) => {
+  try {
+    await mongoose.connection.db.admin().ping();
+    res.status(200).send("Database connected successfully");
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).send("Database connection error");
+  }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
+
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
-    console.log("Connected to mongodb");
     const port = process.env.PORT || 4000;
     app.listen(port, () => console.log(`Server running on port ${port}`));
   })
   .catch((error) => {
-    console.log("Error Connecting to mongodb: " + error);
+    console.log("Error Connecting to mongodb:", error);
   });
