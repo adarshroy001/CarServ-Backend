@@ -4,7 +4,6 @@ const User = require("../Models/userModels");
 const { getStaticFilePath, getLocalPath } = require("../utils/helpers");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
 
 // Function for creating a new car entry
 const createCar = async (req, res) => {
@@ -377,22 +376,6 @@ const getCar = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching car", error: error.toString() });
-  }
-};
-
-const getVehicleDataByVRN = async (req, res) => {
-  try {
-    const apiKey = "26dcf929-90ee-4b72-ba1b-24d5dbf15c7b";
-    const vrn = req.params.vrn;
-    const response = await axios.get(
-      `https://uk1.ukvehicledata.co.uk/api/v1/vehicles/regno/${vrn}?api_nullitems=1&key_vrm_digits_only=1&auth_apikey=${apiKey}`
-    );
-
-    const vehicleData = response.data.response.data;
-    res.json(vehicleData);
-  } catch (error) {
-    console.error("Error fetching vehicle data:", error);
-    res.status(500).json({ error: "Error fetching vehicle data" });
   }
 };
 

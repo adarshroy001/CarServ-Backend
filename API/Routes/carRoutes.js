@@ -35,8 +35,6 @@ router.get("/makes", carController.getMakes);
 router.get("/models", carController.getModels);
 router.get("/count", carController.getCar);
 
-router.get("/vrn/:vrn", carController.getVehicleDataByVRN);
-
 router.get("/:id", carController.getCar);
 
 module.exports = router;
