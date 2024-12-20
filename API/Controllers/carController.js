@@ -249,20 +249,26 @@ const updateCar = async (req, res) => {
   }
 };
 
-// Controller function to fetch a car
-const getCar = async (req, res) => {
-  try {
-    const carId = req.params.id;
-    const car = await Car.findById(carId);
-    if (!car) {
-      return res.status(404).json({ message: "Car not found" });
-    }
-    res.status(200).json(car);
-  } catch (error) {
-    console.error("Get Car Error:", error);
-    res.status(500).json({ message: "Error fetching car" });
-  }
-};
+// // Controller function to fetch a car
+// const getCar = async (req, res) => {
+//   try {
+//     const carId = req.params.id;
+
+//     if (carId === "count") {
+//       const count = await Car.countDocuments(req.query); // Correctly use req.query for filters
+//       return res.status(200).json(count); // Return just the count, not an object
+//     }
+
+//     const car = await Car.findById(carId);
+//     if (!car) {
+//       return res.status(404).json({ message: "Car not found" });
+//     }
+//     res.status(200).json(car);
+//   } catch (error) {
+//     console.error("Get Car Error:", error);
+//     res.status(500).json({ message: "Error fetching car" });
+//   }
+// };
 
 // Controller function to delete car by id
 const deleteCar = async (req, res) => {
@@ -303,6 +309,76 @@ const getLatest = async (req, res) => {
   }
 };
 
+const getMakes = async (req, res) => {
+  try {
+    const cars = await Car.find({}, "name");
+
+    const makes = [...new Set(cars.map((car) => car.name.split(" ")[0]))];
+
+    res.status(200).json(makes);
+  } catch (error) {
+    console.error("Get Makes Error:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching makes", error: error.toString() });
+  }
+};
+
+const getModels = async (req, res) => {
+  try {
+    const { make } = req.query;
+    const cars = await Car.find({ name: new RegExp("^" + make, "i") }, "name");
+    const models = cars.map((car) => {
+      const nameParts = car.name.split(" ");
+      return nameParts.slice(1).join(" ");
+    });
+    res.status(200).json([...new Set(models)]);
+  } catch (error) {
+    console.error("Get Models Error:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching models", error: error.toString() });
+  }
+};
+
+const getCarCount = async (req, res) => {
+  try {
+    const filter = { ...req.query };
+
+    // Handle year range
+    if (filter.year) {
+      const { from, to } = filter.year;
+      if (from) filter.year = { $gte: parseInt(from) };
+      if (to) filter.year = { ...filter.year, $lte: parseInt(to) };
+      if (!from && !to) delete filter.year;
+    }
+
+    const count = await Car.countDocuments(filter);
+    res.status(200).json(count);
+  } catch (error) {
+    console.error("Get Car Count Error:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching car count", error: error.toString() });
+  }
+};
+
+const getCar = async (req, res) => {
+  try {
+    const carId = req.params.id;
+    const car = await Car.findById(carId);
+    if (!car) {
+      return res.status(404).json({ message: "Car not found" });
+    }
+    res.status(200).json(car);
+  } catch (error) {
+    console.error("Get Car Error:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching car", error: error.toString() });
+  }
+};
+
 module.exports = {
   createCar,
   updateCar,
@@ -310,4 +386,7 @@ module.exports = {
   getAllCars,
   getLatest,
   getCar,
+  getMakes,
+  getModels,
+  getCarCount,
 };

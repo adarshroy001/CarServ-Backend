@@ -31,7 +31,10 @@ router.get("/getAll", carController.getAllCars);
 // Get latest cars
 router.get("/getLatest", carController.getLatest);
 
-// Fetch a car
+router.get("/makes", carController.getMakes);
+router.get("/models", carController.getModels);
+router.get("/count", carController.getCar);
+
 router.get("/:id", carController.getCar);
 
 module.exports = router;
