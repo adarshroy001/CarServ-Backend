@@ -6,7 +6,7 @@ const carSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  price: {
+  askingPrice: {
     type: Number,
     required: true,
   },
@@ -14,7 +14,6 @@ const carSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-
   datePosted: {
     type: Date,
     required: true,
@@ -47,38 +46,75 @@ const carSchema = new mongoose.Schema({
     required: true,
   },
   mileage: {
-    type: String,
+    type: Number,
     required: true,
   },
   bodyType: {
     type: String,
     required: true,
   },
-  engine: {
+  engineSize: {
     type: String,
+    required: true,
+  },
+  gearbox: {
+    type: String,
+    required: true,
+  },
+  owners: {
+    type: Number,
+    required: true,
+  },
+  serviceHistory: {
+    type: String,
+    required: true,
+  },
+  seats: {
+    type: Number,
+    required: true,
+  },
+  doors: {
+    type: Number,
     required: true,
   },
   VIN: {
     type: String,
-    required: true,
   },
   exterior: [String],
   interior: [String],
   safety: [String],
-  images: {
-    type: [
-      {
-        url: String,
-        localPath: String,
-      },
-    ],
-  },
+  images: [{ type: String }],
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
   soldTo: [Number],
+  numberPlate: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  phone: {
+    type: String,
+    required: true,
+  },
+  postcode: {
+    type: String,
+    required: true,
+  },
+  publishPhone: Boolean,
+  publishEmail: Boolean,
+  agreeToInspection: Boolean,
+  dateOfRegistration: Date,
+});
+
+carSchema.pre("save", function (next) {
+  console.log("Saving car with images:", this.images);
+  next();
 });
 
 const Car = mongoose.model("Car", carSchema);
