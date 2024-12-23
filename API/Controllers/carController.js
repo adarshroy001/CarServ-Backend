@@ -1,117 +1,82 @@
-// Car model import
 const Car = require("../Models/carModel");
 const User = require("../Models/userModels");
 const { getStaticFilePath, getLocalPath } = require("../utils/helpers");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 
 // Function for creating a new car entry
 const createCar = async (req, res) => {
   try {
-    // Extracting car details from the request body
-    const {
-      name,
-      price,
-      year,
-      datePosted,
-      location,
-      status,
-      condition,
-      transmission,
-      fuel,
-      color,
-      mileage,
-      bodyType,
-      engine,
-      VIN,
-      exterior,
-      interior,
-      safety,
-    } = req.body;
+    console.log("Received car data:", req.body);
+    console.log("Received files:", req.files);
 
-    if (
-      !name ||
-      !price ||
-      !year ||
-      !datePosted ||
-      !location ||
-      !status ||
-      !condition ||
-      !transmission ||
-      !fuel ||
-      !color ||
-      !mileage ||
-      !bodyType ||
-      !engine ||
-      !VIN ||
-      !exterior ||
-      !interior ||
-      !safety
-    ) {
-      return res.status(400).json({ message: "All fields are required" });
+    const carData = req.body;
+
+    const imageUrls = req.files
+      ? req.files.map((file) => `/images/${file.filename}`)
+      : [];
+    carData.images = imageUrls;
+
+    if (typeof carData.features === "string") {
+      try {
+        carData.features = JSON.parse(carData.features);
+      } catch (error) {
+        console.error("Error parsing features:", error);
+        return res.status(400).json({ message: "Invalid features format" });
+      }
     }
 
-    const exteriorArray = JSON.parse(exterior);
-    const interiorArray = JSON.parse(interior);
-    const safetyArray = JSON.parse(safety);
-    const locationObj = JSON.parse(location);
-    const datePostedDate = new Date(datePosted);
+    const requiredFields = [
+      "numberPlate",
+      "mileage",
+      "askingPrice",
+      "email",
+      "phone",
+      "postcode",
+      "fuel",
+      "transmission",
+      "bodyType",
+      "engineSize",
+      "owners",
+      "serviceHistory",
+      "seats",
+      "doors",
+      "color",
+      "dateOfRegistration",
+      "name",
+    ];
 
-    if (
-      !locationObj ||
-      (!exteriorArray && !exteriorArray.length) ||
-      (!interiorArray && !interiorArray.length) ||
-      (!safetyArray && !safetyArray.length)
-    ) {
-      return res.status(400).json({ message: "Invalid fields" });
+    const missingFields = requiredFields.filter((field) => !carData[field]);
+
+    if (missingFields.length > 0) {
+      console.error("Missing required fields:", missingFields);
+      return res.status(400).json({
+        status: "fail",
+        message: `Missing required fields: ${missingFields.join(", ")}`,
+      });
     }
 
-    // Extracting the filenames of uploaded images from req.files array
-    const images =
-      req.files && req.files.length
-        ? req.files.map((image) => {
-            const imageUrl = getStaticFilePath(req, image.filename);
-            const imageLocalPath = getLocalPath(image.filename);
-            return { url: imageUrl, localPath: imageLocalPath };
-          })
-        : [];
+    carData.datePosted = new Date();
+    carData.owner = req.session.user._id;
 
-    if (!images && images.length === 0) {
-      return res.status(400).json({ message: "Atleast one image is required" });
-    }
+    const newCar = new Car(carData);
+    await newCar.save();
 
-    const user = req.session.user._id;
+    console.log("Processed image URLs:", carData.images);
 
-    // Creating a new car object with details and images
-    const newCar = await Car.create({
-      name,
-      price,
-      year,
-      datePosted: datePostedDate,
-      location: locationObj,
-      status,
-      condition,
-      transmission,
-      fuel,
-      color,
-      mileage,
-      bodyType,
-      engine,
-      VIN,
-      exterior: exteriorArray,
-      interior: interiorArray,
-      safety: safetyArray,
-      images,
-      owner: req.session.user._id,
+    res.status(201).json({
+      status: "success",
+      data: {
+        car: newCar,
+      },
     });
-
-    // Adding car in the user listings
-    await User.updateOne({ _id: user }, { $push: { listings: newCar._id } });
-
-    res.status(201).json({ message: "Car added successfully", car: newCar });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error creating car:", error);
+    res.status(500).json({
+      status: "fail",
+      message: error.message,
+    });
   }
 };
 
@@ -120,7 +85,6 @@ const updateCar = async (req, res) => {
   try {
     console.log(req.body, req.files);
     const carId = req.params.id;
-    // Extracting car details from the request body
     const {
       name,
       price,
@@ -141,6 +105,21 @@ const updateCar = async (req, res) => {
       interior,
       safety,
       removedImages,
+      numberPlate,
+      askingPrice,
+      email,
+      phone,
+      postcode,
+      publishPhone,
+      publishEmail,
+      engineSize,
+      gearbox,
+      owners,
+      serviceHistory,
+      seats,
+      doors,
+      agreeToInspection,
+      dateOfRegistration,
     } = req.body;
 
     if (
@@ -160,7 +139,21 @@ const updateCar = async (req, res) => {
       !VIN ||
       !exterior ||
       !interior ||
-      !safety
+      !safety ||
+      !numberPlate ||
+      !email ||
+      !phone ||
+      !postcode ||
+      !publishPhone ||
+      !publishEmail ||
+      !engineSize ||
+      !gearbox ||
+      !owners ||
+      !serviceHistory ||
+      !seats ||
+      !doors ||
+      !agreeToInspection ||
+      !dateOfRegistration
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -239,6 +232,21 @@ const updateCar = async (req, res) => {
     car.exterior = exteriorArray;
     car.interior = interiorArray;
     car.safety = safetyArray;
+    car.numberPlate = numberPlate;
+    car.askingPrice = askingPrice;
+    car.email = email;
+    car.phone = phone;
+    car.postcode = postcode;
+    car.publishPhone = publishPhone;
+    car.publishEmail = publishEmail;
+    car.engineSize = engineSize;
+    car.gearbox = gearbox;
+    car.owners = owners;
+    car.serviceHistory = serviceHistory;
+    car.seats = seats;
+    car.doors = doors;
+    car.agreeToInspection = agreeToInspection;
+    car.dateOfRegistration = new Date(dateOfRegistration);
 
     await car.save();
 
@@ -249,48 +257,34 @@ const updateCar = async (req, res) => {
   }
 };
 
-// // Controller function to fetch a car
-// const getCar = async (req, res) => {
-//   try {
-//     const carId = req.params.id;
-
-//     if (carId === "count") {
-//       const count = await Car.countDocuments(req.query); // Correctly use req.query for filters
-//       return res.status(200).json(count); // Return just the count, not an object
-//     }
-
-//     const car = await Car.findById(carId);
-//     if (!car) {
-//       return res.status(404).json({ message: "Car not found" });
-//     }
-//     res.status(200).json(car);
-//   } catch (error) {
-//     console.error("Get Car Error:", error);
-//     res.status(500).json({ message: "Error fetching car" });
-//   }
-// };
-
-// Controller function to delete car by id
 const deleteCar = async (req, res) => {
   try {
     console.log(req.params.id);
-    const deletedCar = await Car.deleteOne({ id: req.params.id });
+    const deletedCar = await Car.deleteOne({ _id: req.params.id });
 
     if (deletedCar.deletedCount === 0) {
       return res.status(404).json({ message: "Car not found" });
     }
 
-    res.status(200).send({ message: `Successfully deleted ${req.params.id}` }); // 204 No Content indicates successful deletion
+    res.status(200).send({ message: `Successfully deleted ${req.params.id}` });
   } catch (error) {
     console.error("Delete Car Error:", error);
     res.status(500).json({ message: "Error in car deletion" });
   }
 };
 
-// Function for retrieving a list of all cars
 const getAllCars = async (req, res) => {
   try {
     const carList = await Car.find({});
+    console.log(
+      "Retrieved cars:",
+      carList.map((car) => ({
+        id: car._id,
+        name: car.name,
+        imageCount: car.images.length,
+      }))
+    );
+    console.log("Cars data being sent:", carList);
     res.status(200).json(carList);
   } catch (error) {
     console.error("Get All Cars Error:", error);
@@ -298,7 +292,6 @@ const getAllCars = async (req, res) => {
   }
 };
 
-// Function to retrieve latest cars
 const getLatest = async (req, res) => {
   try {
     const latestCars = await Car.find({}).sort({ datePosted: -1 }).limit(4);
@@ -345,7 +338,6 @@ const getCarCount = async (req, res) => {
   try {
     const filter = { ...req.query };
 
-    // Handle year range
     if (filter.year) {
       const { from, to } = filter.year;
       if (from) filter.year = { $gte: parseInt(from) };
@@ -379,14 +371,37 @@ const getCar = async (req, res) => {
   }
 };
 
+const getVehicleDataByVRN = async (req, res) => {
+  try {
+    const apiKey = "26dcf929-90ee-4b72-ba1b-24d5dbf15c7b";
+    const vrn = req.params.vrn.replace(/\s/g, "").toUpperCase();
+
+    const response = await axios.get(
+      `https://uk1.ukvehicledata.co.uk/api/datapackage/VehicleData?v=2&api_nullitems=1&auth_apikey=${apiKey}&key_VRM=${vrn}`
+    );
+
+    if (response.data.Response.StatusCode === "Success") {
+      const vehicleData = response.data.Response.DataItems;
+      res.json(vehicleData);
+    } else {
+      console.error("UK Vehicle Data API Error:", response.data.Response);
+      res.status(404).json({ error: "Vehicle not found or API error." });
+    }
+  } catch (error) {
+    console.error("Error fetching vehicle data:", error);
+    res.status(500).json({ error: "Error fetching vehicle data." });
+  }
+};
+
 module.exports = {
   createCar,
   updateCar,
   deleteCar,
   getAllCars,
   getLatest,
-  getCar,
   getMakes,
   getModels,
   getCarCount,
+  getCar,
+  getVehicleDataByVRN,
 };

@@ -6,11 +6,10 @@ const router = express.Router();
 
 const carController = require("../Controllers/carController.js");
 
-// Create a new car
 router.post(
   "/create",
   isAuthenticated,
-  upload.array("images"),
+  upload.array("images", 10),
   carController.createCar
 );
 
@@ -33,7 +32,10 @@ router.get("/getLatest", carController.getLatest);
 
 router.get("/makes", carController.getMakes);
 router.get("/models", carController.getModels);
-router.get("/count", carController.getCar);
+
+router.get("/count", carController.getCarCount);
+
+router.get("/vrn/:vrn", carController.getVehicleDataByVRN);
 
 router.get("/:id", carController.getCar);
 
