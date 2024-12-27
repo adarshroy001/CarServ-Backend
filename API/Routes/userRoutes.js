@@ -12,7 +12,7 @@ router.post("/create", controller.createUser);
 // Update user details (full name and password)
 router.put("/edit", isAuthenticated, controller.updateUser);
 
-router.put("/editUser", isAuthenticated, controller.updateUserInfo);
+router.put("/editUser", isAuthenticated, controller.updateUserInfo); // Use updateUserInfo, not editUser
 
 // Delete user by email
 router.delete("/", isAuthenticated, controller.deleteUser);
@@ -33,6 +33,18 @@ router.put(
 router.put("/addToWishlist", isAuthenticated, controller.addToWishlist);
 
 router.put("/validatePassword", isAuthenticated, controller.validatePassword);
+
+// Save search route
+router.post("/saveSearch", isAuthenticated, controller.saveSearch);
+
+// Get saved searches route
+router.get("/savedSearches", isAuthenticated, controller.getSavedSearches);
+
+router.delete(
+  "/savedSearch/:id",
+  isAuthenticated,
+  controller.deleteSavedSearch
+);
 
 router.post("/login", services.login);
 

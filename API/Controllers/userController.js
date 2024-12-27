@@ -101,22 +101,25 @@ module.exports = {
 
   updateUserInfo: async (req, res) => {
     try {
-      const { username, gender, phone, address } = req.body;
-      const foundUser = await User.findById(req.session.user._id);
-      if (!foundUser) {
+      const userId = req.session.user._id;
+      const updates = req.body; // Get all updates from request body
+
+      // Find and update the user
+      const updatedUser = await User.findByIdAndUpdate(userId, updates, {
+        new: true, // Return the updated document
+        runValidators: true, // Validate the updates against the schema
+      });
+
+      if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      foundUser.username = username;
-      foundUser.gender = gender;
-      foundUser.phone = phone;
-      foundUser.address = address;
-
-      await foundUser.save();
-      return res.status(200).json({ message: "User info updated" });
+      res.status(200).json({ message: "User info updated", user: updatedUser });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Error updating user info" });
+      console.error("Error updating user info:", error);
+      res
+        .status(500)
+        .json({ message: "Error updating user info", error: error.message }); // Include error message
     }
   },
 
@@ -170,22 +173,57 @@ module.exports = {
 
   addToWishlist: async (req, res) => {
     try {
-      const { wishlistId } = req.body;
-      const foundUser = await User.findById(req.session.user._id);
-      if (!foundUser) {
+      const userId = req.session.user._id;
+      const { carId } = req.body;
+
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $addToSet: { wishlist: carId } },
+        { new: true }
+      );
+
+      if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      foundUser.wishlist = [
-        ...foundUser.wishlist,
-        new mongoose.Types.ObjectId(wishlistId),
-      ];
-
-      await foundUser.save();
-      return res.status(200).json({ message: "Car added to wishlist" });
+      res
+        .status(200)
+        .json({ message: "Car added to wishlist", user: updatedUser });
     } catch (error) {
-      console.error("Error adding to whishlist", error);
-      res.status(500).json({ message: "Error in adding car to wishlist" });
+      console.error("Error adding to wishlist:", error);
+      res
+        .status(500)
+        .json({ message: "Error adding to wishlist", error: error.message });
+    }
+  },
+
+  deleteSavedSearch: async (req, res) => {
+    try {
+      const userId = req.session.user._id;
+      const searchId = req.params.id;
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const searchIndex = user.savedSearches.findIndex(
+        (search) => search._id.toString() === searchId
+      );
+
+      if (searchIndex === -1) {
+        return res.status(404).json({ message: "Saved search not found" });
+      }
+
+      user.savedSearches.splice(searchIndex, 1);
+      await user.save();
+
+      res.status(200).json({ message: "Saved search deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting saved search:", error);
+      res
+        .status(500)
+        .json({ message: "Error deleting saved search", error: error.message });
     }
   },
 
@@ -230,7 +268,7 @@ module.exports = {
       res.status(500).json({ message: "Error in validating password" });
     }
   },
-
+  
   contact: async (req , res , next) => {
     try {
       const { helpType , firstName , lastName , email , message } = req.body;
@@ -253,5 +291,61 @@ module.exports = {
       console.error(error);
       return res.status(500).json({success:false , message: "Server side error" });
     }
-  }
+  },
+  
+  saveSearch: async (req, res) => {
+    try {
+      const userId = req.session.user._id; // Get userId from session
+      const { savedSearch } = req.body;
+
+      // Validate required fields
+      if (!savedSearch.name || !savedSearch.filters) {
+        return res.status(400).json({
+          message: "Search name and filters are required",
+        });
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Add the new search to the savedSearches array
+      user.savedSearches.push({
+        name: savedSearch.name,
+        filters: savedSearch.filters,
+        sortBy: savedSearch.sortBy || "relevance",
+      });
+
+      await user.save();
+
+      res.status(200).json({
+        message: "Search saved successfully",
+        savedSearch: user.savedSearches[user.savedSearches.length - 1],
+      });
+    } catch (error) {
+      console.error("Error saving search:", error);
+      res.status(500).json({
+        message: "Error saving search",
+        error: error.message,
+      });
+    }
+  },
+
+  getSavedSearches: async (req, res) => {
+    try {
+      const user = await User.findById(req.session.user._id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json(user.savedSearches);
+    } catch (error) {
+      console.error("Error fetching saved searches:", error);
+      res.status(500).json({
+        message: "Error fetching saved searches",
+        error: error.message,
+      });
+    }
+  },
 };

@@ -1,6 +1,25 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
+const savedSearchSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  filters: {
+    type: Object,
+    required: true,
+  },
+  sortBy: {
+    type: String,
+    default: "relevance",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -53,6 +72,7 @@ const userSchema = new mongoose.Schema({
       ref: "Car",
     },
   ],
+  savedSearches: [savedSearchSchema],
   bookings: [
     {
       type: mongoose.Schema.Types.ObjectId,
