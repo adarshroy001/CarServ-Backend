@@ -50,6 +50,8 @@ router.post("/login", services.login);
 
 router.post("/google-oauth", services.loginGoogleOAuth);
 
+router.post("/contact" , controller.contact);
+
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
