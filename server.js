@@ -51,6 +51,7 @@ app.use("/users", userRoutes);
 app.use("/cars", carsRoutes);
 app.use("/bookings", bookingsRoutes);
 
+// Add this to test the database connection
 app.get("/test-db", async (req, res) => {
   try {
     await mongoose.connection.db.admin().ping();
@@ -70,6 +71,8 @@ app.use((err, req, res, next) => {
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
+    console.log("Connected to mongodb");
+    console.log("MongoDB URI:", mongoURI); // Log the URI (make sure to remove this in production)
     const port = process.env.PORT || 4000;
     app.listen(port, () => console.log(`Server running on port ${port}`));
   })
