@@ -110,6 +110,31 @@ const carSchema = new mongoose.Schema({
   publishEmail: Boolean,
   agreeToInspection: Boolean,
   dateOfRegistration: Date,
+  features: {
+    EngineAndPerformance: [String],
+    Safety: [String],
+    ComfortAndConvenience: [String],
+    ExteriorFeatures: [String],
+    Other: [String],
+  },
+  runningCosts: {
+    fuelEconomy: {
+      urban: String,
+      extraUrban: String,
+      combined: String,
+    },
+    annualCosts: {
+      co2Emissions: String,
+      vedFirstYear: String,
+      vedStandard: String,
+    },
+  },
+  vehicleChecks: {
+    stolen: Boolean,
+    scrapped: Boolean,
+    exported: Boolean,
+    imported: Boolean,
+  },
 });
 
 carSchema.pre("save", function (next) {
