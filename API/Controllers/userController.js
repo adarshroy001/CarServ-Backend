@@ -4,6 +4,7 @@ const User = require("../Models/userModels");
 const bcrypt = require("bcrypt");
 const { Static_data } = require("../../assets/config");
 const mongoose = require("mongoose");
+const ContactForm = require("../Models/contactModel");
 
 module.exports = {
   createUser: async (req, res) => {
@@ -229,4 +230,28 @@ module.exports = {
       res.status(500).json({ message: "Error in validating password" });
     }
   },
+
+  contact: async (req , res , next) => {
+    try {
+      const { helpType , firstName , lastName , email , message } = req.body;
+      if(!helpType || !firstName || !lastName || !email || !message) {
+        return res.status(500).json({success: false , message:"Please enter all required fields"});
+      }
+    
+      const contact = new ContactForm({
+        helpType,
+        firstName,
+        lastName,
+        email,
+        message,
+      })
+
+      await contact.save();
+      res.status(200).json({ success: true , message:"Your message has been sent successfully" });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({success:false , message: "Server side error" });
+    }
+  }
 };
