@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const expireTime = process.env.EMAIL_OTP_EXPIRE_TIME || 300;
+const expireTime = process.env.EMAIL_OTP_EXPIRE_TIME || 600;
 
 const otpSchema = new mongoose.Schema({
     otp: {
@@ -14,7 +14,7 @@ const otpSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: expireTime // OTP will expire after 5 minutes
+        expires: expireTime // OTP will expire after 10 minutes
     }
 });
 
