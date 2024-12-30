@@ -52,6 +52,10 @@ router.post("/google-oauth", services.loginGoogleOAuth);
 
 router.post("/contact" , controller.contact);
 
+router.get("/send-otp", isAuthenticated, services.sendOTP);
+
+router.post("/verify-otp",isAuthenticated, services.verifyOTP);
+
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
