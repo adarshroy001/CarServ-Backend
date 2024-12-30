@@ -416,22 +416,35 @@ const getCar = async (req, res) => {
 
 const getVehicleDataByVRN = async (req, res) => {
   try {
-    const apiKey = "26dcf929-90ee-4b72-ba1b-24d5dbf15c7b";
+    const apiKey = process.env.UK_VEHICLE_API_KEY;
     const vrn = req.params.vrn.replace(/\s/g, "").toUpperCase();
+    const apiUrl = `${process.env.UK_VEHICLE_API_URL}?v=2&api_nullitems=1&auth_apikey=${apiKey}&key_VRM=${vrn}`;
 
-    const response = await axios.get(
-      `https://uk1.ukvehicledata.co.uk/api/datapackage/VehicleData?v=2&api_nullitems=1&auth_apikey=${apiKey}&key_VRM=${vrn}`
-    );
+    const response = await axios.get(apiUrl);
 
     if (response.data.Response.StatusCode === "Success") {
       const vehicleData = response.data.Response.DataItems;
       res.json(vehicleData);
     } else {
       console.error("UK Vehicle Data API Error:", response.data.Response);
-      res.status(404).json({ error: "Vehicle not found or API error." });
+
+      if (response.status === 401) {
+        return res.status(401).json({
+          error: "Invalid or expired API key. Please contact support.",
+        });
+      } else if (response.status === 404) {
+        return res.status(404).json({ error: "Vehicle not found." });
+      } else {
+        return res.status(500).json({ error: "API request failed." });
+      }
     }
   } catch (error) {
     console.error("Error fetching vehicle data:", error);
+    if (error.response && error.response.status === 401) {
+      return res
+        .status(401)
+        .json({ error: "Invalid or expired API key. Please contact support." });
+    }
     res.status(500).json({ error: "Error fetching vehicle data." });
   }
 };
