@@ -50,12 +50,25 @@ const router = express.Router();
 const carController = require("../Controllers/carController.js");
 
 // Define routes using the controller object's methods
+// router.post(
+//   "/create",
+//   // isAuthenticated,
+//   upload.array("images", 10),
+//   carController.createCar
+// );
+
 router.post(
   "/create",
-  isAuthenticated,
-  upload.array("images", 10),
+  isAuthenticated,  
+  upload.fields([
+    { name: "images", maxCount: 10 },   
+    { name: "cImages", maxCount: 10 },   
+    { name: "cImages1", maxCount: 10 },   
+    { name: "cImages2", maxCount: 10 }, 
+  ]),
   carController.createCar
 );
+
 
 // Update car details
 router.put(

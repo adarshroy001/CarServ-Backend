@@ -5,118 +5,127 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 
-// Function for creating a new car entry
 const createCar = async (req, res) => {
   try {
-    console.log("Received car data:", req.body);
-    console.log("Received files:", req.files);
+    // Destructure the necessary fields from req.body
+    const {
+      // Car data
+      numberPlat,
+      mileage,
+      askingPrice,
+      email,
+      phone,
+      postcode,
+      fuel,
+      transmission,
+      bodyType,
+      engineSize,
+      owners,
+      serviceHistory,
+      seats,
+      doors,
+      color,
+      dateOfRegistration,
+      name,
+      // Certify data
+      agreeToTerms1, agreeToTerms, agreeToTerms2, agreeToTerms3, 
+      agreeToTerms4, agreeToTerms5, bankName, sortCode, accountNumber, 
+      fullName, valuation, fullAddress, cImages,cImages1, cImages2,
 
-    const carData = req.body;
+      // Payment data
+      amount, agreeToTerms: agreeToTermsPayment
+    } = req.body;
 
-    // Correctly handle image uploads and store URLs in the database
-    const imageUrls = req.files
-      ? req.files.map((file) => `/images/${file.filename}`)
-      : [];
-    carData.images = imageUrls;
+    // Required fields for validation
+    const requiredFields = {
+      carData: ['name', 'askingPrice', 'year', 'location', 'status', 'condition', 
+                'transmission', 'fuel', 'color', 'mileage', 'bodyType', 
+                'engineSize', 'gearbox', 'owners', 'serviceHistory', 'seats', 
+                'doors', 'numberPlate', 'email', 'phone', 'postcode', 
+                'dateOfRegistration'],
+      certifyData: ['agreeToTerms', 'agreeToTerms1', 'agreeToTerms2', 
+                    'agreeToTerms3', 'agreeToTerms4', 'agreeToTerms5', 
+                    'bankName', 'sortCode', 'accountNumber', 'fullName', 
+                    'valuation', 'fullAddress'],
+      paymentData: ['amount', 'agreeToTermsPayment']
+    };
 
-    // Parse features
-    if (typeof carData.features === "string") {
-      try {
-        carData.features = JSON.parse(carData.features);
-      } catch (error) {
-        console.error("Error parsing features:", error);
-        return res.status(400).json({ message: "Invalid features format" });
-      }
-    }
+    // Function to check for missing fields
+    const findMissingFields = (fields, data) => {
+      return fields.filter(field => !data[field] && data[field] !== false);
+    };
 
-    // Parse runningCosts
-    if (typeof carData.runningCosts === "string") {
-      try {
-        carData.runningCosts = JSON.parse(carData.runningCosts);
-      } catch (error) {
-        console.error("Error parsing runningCosts:", error);
-        return res.status(400).json({ message: "Invalid runningCosts format" });
-      }
-    }
+    // Check for missing fields
+    const missingCarData = findMissingFields(requiredFields.carData, req.body);
+    const missingCertifyData = findMissingFields(requiredFields.certifyData, req.body);
+    const missingPaymentData = findMissingFields(requiredFields.paymentData, req.body);
 
-    // Parse vehicleChecks
-    if (typeof carData.vehicleChecks === "string") {
-      try {
-        carData.vehicleChecks = JSON.parse(carData.vehicleChecks);
-      } catch (error) {
-        console.error("Error parsing vehicleChecks:", error);
-        return res
-          .status(400)
-          .json({ message: "Invalid vehicleChecks format" });
-      }
-    }
-
-    // Check for required fields
-    const requiredFields = [
-      "numberPlate",
-      "mileage",
-      "askingPrice",
-      "email",
-      "phone",
-      "postcode",
-      "fuel",
-      "transmission",
-      "bodyType",
-      "engineSize",
-      "owners",
-      "serviceHistory",
-      "seats",
-      "doors",
-      "color",
-      "dateOfRegistration",
-      "name",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !carData[field]);
-
-    if (missingFields.length > 0) {
-      console.error("Missing required fields:", missingFields);
+    if (missingCarData.length || missingCertifyData.length || missingPaymentData.length) {
       return res.status(400).json({
         status: "fail",
-        message: `Missing required fields: ${missingFields.join(", ")}`,
+        message: "Missing required fields",
+        missingFields: {
+          carData: missingCarData,
+          certifyData: missingCertifyData,
+          paymentData: missingPaymentData
+        }
       });
     }
 
-    carData.datePosted = new Date();
-    carData.owner = req.session.user._id;
+    // Handle image uploads
+    const imageUrls = req.files?.images?.map(file => `/images/${file.filename}`) || [];
+    const cImagesUrls = req.files?.cImages?.map(file => `/images/${file.filename}`) || [];
+    const cImages1Urls = req.files?.cImages1?.map(file => `/images/${file.filename}`) || [];
+    const cImages2Urls = req.files?.cImages2?.map(file => `/images/${file.filename}`) || [];
 
-    // Convert boolean strings to actual booleans
-    carData.publishPhone = carData.publishPhone === "true";
-    carData.publishEmail = carData.publishEmail === "true";
-    carData.agreeToInspection = carData.agreeToInspection === "true";
+    // Car data
+    const carData = {
+      name, askingPrice: Number(askingPrice), year: Number(year), location, status, 
+      condition: transmission, transmission: fuel, fuel: bodyType, color, mileage: Number(mileage), 
+      engineSize: Number(engineSize), gearbox: owners, owners: Number(owners), 
+      serviceHistory, seats: Number(seats), doors: Number(doors), numberPlate: numberPlat, 
+      email: email, phone: phone, postcode: postcode, publishPhone: publishPhone === 'true', 
+      publishEmail: publishEmail === 'true', agreeToInspection: agreeToInspection === 'true', 
+      dateOfRegistration, images: imageUrls, datePosted: datePosted || new Date(), 
+      owner: req.session.user._id
+    };
 
-    // Convert number strings to actual numbers
-    carData.mileage = Number(carData.mileage);
-    carData.askingPrice = Number(carData.askingPrice);
-    carData.owners = Number(carData.owners);
-    carData.seats = Number(carData.seats);
-    carData.doors = Number(carData.doors);
-    carData.year = Number(carData.year);
+    // Certify data
+    const certifyData = {
+      agreeToTerms: agreeToTerms === 'true', agreeToTerms1: agreeToTerms1 === 'true', 
+      agreeToTerms2: agreeToTerms2 === 'true', agreeToTerms3: agreeToTerms3 === 'true', 
+      agreeToTerms4: agreeToTerms4 === 'true', agreeToTerms5: agreeToTerms5 === 'true', 
+      bankName, sortCode, accountNumber, fullName, valuation, fullAddress, 
+      images: cImagesUrls, images1: cImages1Urls, images2: cImages2Urls
+    };
 
-    const newCar = new Car(carData);
-    await newCar.save();
+    // Payment data
+    const paymentData = {
+      amount: Number(amount), agreeToTerms: agreeToTermsPayment === 'true'
+    };
 
-    console.log("Processed image URLs:", carData.images);
+    // Combine all data into one object
+    const combinedData = {
+      ...carData,
+      certify: certifyData,
+      payment: paymentData
+    };
 
+    // Save the combined data to the database
+    const newCar = new Car(combinedData);
+    const savedCar = await newCar.save();
+
+    // Respond with the saved car data
     res.status(201).json({
       status: "success",
-      data: {
-        car: newCar,
-      },
+      data: { car: savedCar.toObject() }
     });
   } catch (error) {
-    console.error("Error creating car:", error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message,
-    });
+    console.error("Error saving car:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 // Controller function to update car details
 const updateCar = async (req, res) => {
@@ -159,7 +168,51 @@ const updateCar = async (req, res) => {
       doors,
       agreeToInspection,
       dateOfRegistration,
+      //Certify
+
+      agreeTo,
+      agreeToTerms1,
+      bankName,
+      sortCode,
+      accountNumber,
+      fullName,
+      fullAddress,
+      dateOfBirth,
+      images,
+      serviceRecords,
+      images2,
+      images3,
+      valuation,
+      agreeToTerms2,
+      agreeToTerms3,
+      agreeToTerms4,
+      agreeToTerms5,
+
+      // /payment
+      amount,
+      agreeToTerms,
     } = req.body;
+
+    console.log(
+      agreeTo,
+      bankName,
+      sortCode,
+      accountNumber,
+      fullName,
+      fullAddress,
+      dateOfBirth,
+      images,
+      serviceRecords,
+      images2,
+      images3,
+      valuation,
+      agreeToTerms2,
+      agreeToTerms3,
+      agreeToTerms4,
+      agreeToTerms5,
+      amount,
+      agreeToTerms
+    );
 
     if (
       !name ||
@@ -192,7 +245,28 @@ const updateCar = async (req, res) => {
       !seats ||
       !doors ||
       !agreeToInspection ||
-      !dateOfRegistration
+      !dateOfRegistration ||
+      // Certify Conditions
+      !agreeTo ||
+      !agreeToTerms1 ||
+      !bankName ||
+      !sortCode ||
+      !accountNumber ||
+      !fullName ||
+      !fullAddress ||
+      !dateOfBirth ||
+      !images ||
+      !serviceRecords ||
+      !images2 ||
+      !images3 ||
+      !valuation ||
+      !agreeToTerms2 ||
+      !agreeToTerms3 ||
+      !agreeToTerms4 ||
+      !agreeToTerms5 ||
+      // Payment Conditions
+      !amount ||
+      !agreeToTerms
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
