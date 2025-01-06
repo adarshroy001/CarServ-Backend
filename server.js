@@ -8,6 +8,7 @@ const dotenv = require("dotenv");
 const userRoutes = require("./API/Routes/userRoutes");
 const carsRoutes = require("./API/Routes/carRoutes");
 const bookingsRoutes = require("./API/Routes/BookingRoutes");
+const buyCarRoutes = require("./API/Routes/buyCarRoutes");
 
 dotenv.config();
 const app = express();
@@ -50,6 +51,7 @@ app.use(
 app.use("/users", userRoutes);
 app.use("/cars", carsRoutes);
 app.use("/bookings", bookingsRoutes);
+app.use("/buyCars", buyCarRoutes);
 
 // Add this to test the database connection
 app.get("/test-db", async (req, res) => {
