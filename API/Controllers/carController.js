@@ -449,6 +449,27 @@ const getVehicleDataByVRN = async (req, res) => {
   }
 };
 
+const softDelListing = async (req, res) => {
+  try {
+    const atListingID = req.params.id;
+    const updateListing = await Car.findByIdAndUpdate(
+      atListingID,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!updateListing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+
+    res.status(200).json({ message: "Listing soft-deleted successfully", updateListing });
+  } catch (error) {
+    console.error("Error soft-deleting listing:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 module.exports = {
   createCar,
   updateCar,
@@ -460,4 +481,5 @@ module.exports = {
   getCarCount,
   getCar,
   getVehicleDataByVRN,
+  softDelListing
 };

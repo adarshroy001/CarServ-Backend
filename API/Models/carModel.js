@@ -135,6 +135,7 @@ const carSchema = new mongoose.Schema({
     exported: Boolean,
     imported: Boolean,
   },
+  isDeleted: { type: Boolean, default: false },
 });
 
 carSchema.pre("save", function (next) {

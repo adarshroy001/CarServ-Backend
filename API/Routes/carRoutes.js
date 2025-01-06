@@ -65,6 +65,12 @@ router.put(
   carController.updateCar
 );
 
+router.put(
+  "/editListing/:id",
+  isAuthenticated,
+  carController.softDelListing
+);
+
 // Delete car by id
 router.delete("/delete/:id", carController.deleteCar);
 
