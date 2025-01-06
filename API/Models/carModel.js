@@ -108,6 +108,7 @@ const carSchema = new mongoose.Schema({
     exported: Boolean,
     imported: Boolean,
   },
+  isDeleted: { type: Boolean, default: false },
 
   // Embed the sub-models
   certify: certifySchema,
