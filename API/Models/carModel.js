@@ -79,8 +79,8 @@ const carSchema = new mongoose.Schema({
   email: { type: String, required: true },
   phone: { type: String, required: true },
   postcode: { type: String, required: true },
-  publishPhone: Boolean,
-  publishEmail: Boolean,
+  phoneCommunication: Boolean,
+  emailCommunication: Boolean,
   agreeToInspection: Boolean,
   dateOfRegistration: Date,
   features: {

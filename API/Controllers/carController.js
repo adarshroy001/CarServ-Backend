@@ -84,8 +84,8 @@ const createCar = async (req, res) => {
       condition: transmission, transmission: fuel, fuel: bodyType, color, mileage: Number(mileage), 
       engineSize: Number(engineSize), gearbox: owners, owners: Number(owners), 
       serviceHistory, seats: Number(seats), doors: Number(doors), numberPlate: numberPlat, 
-      email: email, phone: phone, postcode: postcode, publishPhone: publishPhone === 'true', 
-      publishEmail: publishEmail === 'true', agreeToInspection: agreeToInspection === 'true', 
+      email: email, phone: phone, postcode: postcode, phoneCommunication: phoneCommunication === 'true', 
+      emailCommunication: emailCommunication === 'true', agreeToInspection: agreeToInspection === 'true', 
       dateOfRegistration, images: imageUrls, datePosted: datePosted || new Date(), 
       owner: req.session.user._id
     };
@@ -158,8 +158,8 @@ const updateCar = async (req, res) => {
       email,
       phone,
       postcode,
-      publishPhone,
-      publishEmail,
+      phoneCommunication,
+      emailCommunication,
       engineSize,
       gearbox,
       owners,
@@ -236,8 +236,8 @@ const updateCar = async (req, res) => {
       !email ||
       !phone ||
       !postcode ||
-      !publishPhone ||
-      !publishEmail ||
+      !phoneCommunication ||
+      !emailCommunication ||
       !engineSize ||
       !gearbox ||
       !owners ||
@@ -350,8 +350,8 @@ const updateCar = async (req, res) => {
     car.email = email;
     car.phone = phone;
     car.postcode = postcode;
-    car.publishPhone = publishPhone;
-    car.publishEmail = publishEmail;
+    car.phoneCommunication = phoneCommunication;
+    car.emailCommunication = emailCommunication;
     car.engineSize = engineSize;
     car.gearbox = gearbox;
     car.owners = owners;
