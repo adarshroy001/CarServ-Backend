@@ -7,8 +7,10 @@
     "start": "node server.js",
     "debug": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "react-scripts build"
-  },
+    "build": "npm run clean && npm run prepare-assets",
+    "clean": "rimraf dist",
+    "prepare-assets": "cp -R public dist/public"
+   },
   "author": "",
   "license": "ISC",
   "dependencies": {
