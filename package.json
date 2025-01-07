@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run clean && npm run prepare-assets",
     "clean": "rimraf dist",
-    "prepare-assets": "cp -R public dist/public"
+    "prepare-assets": "mkdir -p dist/public && cp -R public/* dist/public"
    },
   "author": "",
   "license": "ISC",
