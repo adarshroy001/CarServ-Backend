@@ -27,12 +27,11 @@ jobs:
         run: npm run build
          
       # Step 5: Azure Login
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: Azure Login action
+        uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_SECRET_NAME }}
-          tenant-id: ${{ secrets.AZURE_TENANTID_SECRET_NAME }}
-          subscription-id: ${{ secrets.AZURE_SUBSCIPTIONID_SECRET_NAME }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
 
       # Step 5: Deploy to Azure App Service
       - name: Deploy to Azure App Service
