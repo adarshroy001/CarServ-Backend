@@ -51,7 +51,7 @@ app.use(
 app.use("/users", userRoutes);
 app.use("/cars", carsRoutes);
 app.use("/bookings", bookingsRoutes);
-app.use("/buyCars", buyCarRoutes);
+app.use("/buyer", buyCarRoutes);
 
 // Add this to test the database connection
 app.get("/test-db", async (req, res) => {
