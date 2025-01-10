@@ -1,4 +1,5 @@
 const Car = require("../Models/carModel");
+const mongoose = require("mongoose");
 const User = require("../Models/userModels");
 const { getStaticFilePath, getLocalPath } = require("../utils/helpers");
 const fs = require("fs");
@@ -10,7 +11,7 @@ const createCar = async (req, res) => {
     // Destructure the necessary fields from req.body
     const {
       // Car data
-      numberPlat,
+      numberPlate,
       mileage,
       askingPrice,
       email,
@@ -27,88 +28,182 @@ const createCar = async (req, res) => {
       color,
       dateOfRegistration,
       name,
+      year,
+      condition,
+      status,
+      images1,
+      photos,
       // Certify data
-      agreeToTerms1, agreeToTerms, agreeToTerms2, agreeToTerms3, 
-      agreeToTerms4, agreeToTerms5, bankName, sortCode, accountNumber, 
-      fullName, valuation, fullAddress, cImages,cImages1, cImages2,
+      agreeToTerms1,
+      agreeToTerms,
+      agreeToTerms2,
+      agreeToTerms3,
+      agreeToTerms4,
+      agreeToTerms5,
+      bankName,
+      sortCode,
+      accountNumber,
+      fullName,
+      valuation,
+      fullAddress,
+      dateOfBirth,
+      cImages,
+      cImages1,
+      cImages2,
 
       // Payment data
-      amount, agreeToTerms: agreeToTermsPayment
+      amount,
+      agreeToTerms: agreeToTermsPayment,
     } = req.body;
 
     // Required fields for validation
     const requiredFields = {
-      carData: ['name', 'askingPrice', 'year', 'location', 'status', 'condition', 
-                'transmission', 'fuel', 'color', 'mileage', 'bodyType', 
-                'engineSize', 'gearbox', 'owners', 'serviceHistory', 'seats', 
-                'doors', 'numberPlate', 'email', 'phone', 'postcode', 
-                'dateOfRegistration'],
-      certifyData: ['agreeToTerms', 'agreeToTerms1', 'agreeToTerms2', 
-                    'agreeToTerms3', 'agreeToTerms4', 'agreeToTerms5', 
-                    'bankName', 'sortCode', 'accountNumber', 'fullName', 
-                    'valuation', 'fullAddress'],
-      paymentData: ['amount', 'agreeToTermsPayment']
+      carData: [
+        "name",
+        "askingPrice",
+        "year",
+        "status",
+        "condition",
+        "transmission",
+        "fuel",
+        "color",
+        "mileage",
+        "bodyType",
+        "engineSize",
+        "gearbox",
+        "owners",
+        "serviceHistory",
+        "seats",
+        "doors",
+        "numberPlate",
+        "email",
+        "phone",
+        "postcode",
+        "dateOfRegistration",
+      ],
+      certifyData: [
+        "agreeToTerms1",
+        "agreeToTerms2",
+        "agreeToTerms3",
+        "agreeToTerms4",
+        "agreeToTerms5",
+        "bankName",
+        "sortCode",
+        "accountNumber",
+        "fullName",
+        "valuation",
+        "fullAddress",
+        "dateOfBirth",
+      ],
+      paymentData: ["amount", "agreeToTermsPayment"],
     };
 
     // Function to check for missing fields
     const findMissingFields = (fields, data) => {
-      return fields.filter(field => !data[field] && data[field] !== false);
+      return fields.filter((field) => !data[field] && data[field] !== false);
     };
 
     // Check for missing fields
     const missingCarData = findMissingFields(requiredFields.carData, req.body);
-    const missingCertifyData = findMissingFields(requiredFields.certifyData, req.body);
-    const missingPaymentData = findMissingFields(requiredFields.paymentData, req.body);
+    const missingCertifyData = findMissingFields(
+      requiredFields.certifyData,
+      req.body
+    );
+    const missingPaymentData = findMissingFields(
+      requiredFields.paymentData,
+      req.body
+    );
 
-    if (missingCarData.length || missingCertifyData.length || missingPaymentData.length) {
+    if (
+      missingCarData.length ||
+      missingCertifyData.length ||
+      missingPaymentData.length
+    ) {
       return res.status(400).json({
         status: "fail",
         message: "Missing required fields",
         missingFields: {
           carData: missingCarData,
           certifyData: missingCertifyData,
-          paymentData: missingPaymentData
-        }
+          paymentData: missingPaymentData,
+        },
       });
     }
 
+    console.log("Uploaded files:", req.files);
+
     // Handle image uploads
-    const imageUrls = req.files?.images?.map(file => `/images/${file.filename}`) || [];
-    const cImagesUrls = req.files?.cImages?.map(file => `/images/${file.filename}`) || [];
-    const cImages1Urls = req.files?.cImages1?.map(file => `/images/${file.filename}`) || [];
-    const cImages2Urls = req.files?.cImages2?.map(file => `/images/${file.filename}`) || [];
+    const imageUrls =
+      req.files?.images1?.map((file) => `/images/${file.filename}`) || [];
+    const imageUrls1 =
+      req.files?.photos?.map((file) => `/images/${file.filename}`) || [];
+    const cImagesUrls =
+      req.files?.cImages?.map((file) => `/images/${file.filename}`) || [];
+    const cImages1Urls =
+      req.files?.cImages1?.map((file) => `/images/${file.filename}`) || [];
+    const cImages2Urls =
+      req.files?.cImages2?.map((file) => `/images/${file.filename}`) || [];
 
     // Car data
     const carData = {
-      name, askingPrice: Number(askingPrice), year: Number(year), location, status, 
-      condition: transmission, transmission: fuel, fuel: bodyType, color, mileage: Number(mileage), 
-      engineSize: Number(engineSize), gearbox: owners, owners: Number(owners), 
-      serviceHistory, seats: Number(seats), doors: Number(doors), numberPlate: numberPlat, 
-      email: email, phone: phone, postcode: postcode, phoneCommunication: phoneCommunication === 'true', 
-      emailCommunication: emailCommunication === 'true', agreeToInspection: agreeToInspection === 'true', 
-      dateOfRegistration, images: imageUrls, datePosted: datePosted || new Date(), 
-      owner: req.session.user._id
+      name,
+      askingPrice: Number(askingPrice),
+      year: Number(year),
+      status,
+      condition,
+      transmission,
+      fuel,
+      bodyType,
+      color,
+      mileage: Number(mileage),
+      engineSize: Number(engineSize),
+      gearbox: owners,
+      owners: Number(owners),
+      serviceHistory,
+      seats: Number(seats),
+      doors: Number(doors),
+      numberPlate,
+      email: email,
+      phone: phone,
+      postcode: postcode,
+      dateOfRegistration,
+      images: imageUrls,
+      images1: imageUrls1,
+      datePosted: new Date(),
+      owner: req.session.user._id,
     };
 
     // Certify data
     const certifyData = {
-      agreeToTerms: agreeToTerms === 'true', agreeToTerms1: agreeToTerms1 === 'true', 
-      agreeToTerms2: agreeToTerms2 === 'true', agreeToTerms3: agreeToTerms3 === 'true', 
-      agreeToTerms4: agreeToTerms4 === 'true', agreeToTerms5: agreeToTerms5 === 'true', 
-      bankName, sortCode, accountNumber, fullName, valuation, fullAddress, 
-      images: cImagesUrls, images1: cImages1Urls, images2: cImages2Urls
+      agreeToTerms: agreeToTerms === "true",
+      agreeToTerms1: agreeToTerms1 === "true",
+      agreeToTerms2: agreeToTerms2 === "true",
+      agreeToTerms3: agreeToTerms3 === "true",
+      agreeToTerms4: agreeToTerms4 === "true",
+      agreeToTerms5: agreeToTerms5 === "true",
+      bankName,
+      sortCode,
+      accountNumber,
+      fullName,
+      valuation,
+      fullAddress,
+      allCar: cImagesUrls,
+      cImages: cImages1Urls,
+      CImages1: cImages2Urls,
+      dateOfBirth: new Date(dateOfBirth),
     };
 
     // Payment data
     const paymentData = {
-      amount: Number(amount), agreeToTerms: agreeToTermsPayment === 'true'
+      amount: Number(amount),
+      agreeToTerms: agreeToTermsPayment === "true",
     };
 
     // Combine all data into one object
     const combinedData = {
       ...carData,
       certify: certifyData,
-      payment: paymentData
+      payment: paymentData,
     };
 
     // Save the combined data to the database
@@ -118,14 +213,13 @@ const createCar = async (req, res) => {
     // Respond with the saved car data
     res.status(201).json({
       status: "success",
-      data: { car: savedCar.toObject() }
+      data: { car: savedCar.toObject() },
     });
   } catch (error) {
     console.error("Error saving car:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 // Controller function to update car details
 const updateCar = async (req, res) => {
@@ -166,7 +260,7 @@ const updateCar = async (req, res) => {
       serviceHistory,
       seats,
       doors,
-      agreeToInspection,
+
       dateOfRegistration,
       //Certify
 
@@ -407,6 +501,32 @@ const getAllCars = async (req, res) => {
   }
 };
 
+async function getAllCars1(req, res) {
+  try {
+    const userId = req.session.user._id;
+    const carList = await Car.find({
+      owner: new mongoose.Types.ObjectId(userId),
+    });
+
+    if (!carList.length) {
+      return res.status(404).json({ message: "No cars found for this user." });
+    }
+
+    const formattedCars = carList.map((car) => ({
+      id: car._id,
+      name: car.name,
+      askingPrice: car.askingPrice,
+      year: car.year,
+      imageCount: car.images.length || 0,
+    }));
+
+    res.status(200).json(formattedCars);
+  } catch (error) {
+    console.error("Get All Cars Error:", error);
+    res.status(500).json({ message: "An error occurred while fetching cars." });
+  }
+}
+
 // Function to retrieve latest cars
 const getLatest = async (req, res) => {
   try {
@@ -536,24 +656,26 @@ const softDelListing = async (req, res) => {
       return res.status(404).json({ error: "Listing not found" });
     }
 
-    res.status(200).json({ message: "Listing soft-deleted successfully", updateListing });
+    res
+      .status(200)
+      .json({ message: "Listing soft-deleted successfully", updateListing });
   } catch (error) {
     console.error("Error soft-deleting listing:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-
 module.exports = {
   createCar,
   updateCar,
   deleteCar,
   getAllCars,
+  getAllCars1,
   getLatest,
   getMakes,
   getModels,
   getCarCount,
   getCar,
   getVehicleDataByVRN,
-  softDelListing
+  softDelListing,
 };

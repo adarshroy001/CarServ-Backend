@@ -2,26 +2,19 @@ const mongoose = require("mongoose");
 
 // Define the Certify Sub-Model
 const certifySchema = new mongoose.Schema({
-  agreeTo: { type: Boolean, required: true },
   bankName: { type: String, required: true },
   sortCode: { type: String, required: true },
   accountNumber: { type: String, required: true },
   fullName: { type: String, required: true },
   fullAddress: { type: String, required: true },
   dateOfBirth: { type: String, required: true },
-  images: {
+  allCar: {
     type: [String],
     required: true,
-    validate: {
-      validator: function (value) {
-        return value.length >= 10;
-      },
-      message: "The images array must contain at least 10 images.",
-    },
   },
   serviceRecords: { type: [String], required: false },
-  images1: { type: [String], required: false },
-  images2: { type: [String], required: true },
+  cImages: { type: [String], required: false },
+  CImages1: { type: [String], required: true },
   valuation: { type: String, required: true },
   agreeToTerms2: { type: Boolean, required: true },
   agreeToTerms3: { type: Boolean, required: true },
@@ -73,6 +66,7 @@ const carSchema = new mongoose.Schema({
   interior: [String],
   safety: [String],
   images: [{ type: String }],
+  images1: [{ type: String }],
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   soldTo: [Number],
   numberPlate: { type: String, required: true },
