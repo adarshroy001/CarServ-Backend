@@ -32,6 +32,13 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
+      
+      - name: Delete all files from App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app_name: Liveautos-server
+          package: '' # Empty string to delete all files
+          publish_profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
       # Step 5: Deploy to Azure App Service
       - name: Deploy to Azure App Service
