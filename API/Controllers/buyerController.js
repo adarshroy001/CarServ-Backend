@@ -1,4 +1,4 @@
-const buyCar = require("../Models/buyCarModel");
+const buyer = require("../Models/buyerModel");
 
 const createBuyCar = async (req, res) => {
   try {
@@ -9,8 +9,19 @@ const createBuyCar = async (req, res) => {
       ? req.files.map((file) => `/images/${file.filename}`)
       : [];
     buyCarData.images = imageUrls;
+    buyCarData.paymentStatus = "Completed";
+    buyCarData.status = "Sold";
+    buyCarData.userId = req.session.user._id;
 
-    const requiredFields = ["fullName", "address", "postcode"];
+    const requiredFields = [
+      "fullName",
+      "address1",
+      "address2",
+      "city",
+      "postcode",
+      "carId",
+      "dateOfBirth",
+    ];
     console.log(requiredFields);
 
     const missingFields = requiredFields.filter((field) => !buyCarData[field]);
@@ -23,12 +34,12 @@ const createBuyCar = async (req, res) => {
       });
     }
 
-    const newBuyCar = new buyCar(buyCarData);
-    await newBuyCar.save();
+    const newBuyer = new buyer(buyCarData);
+    await newBuyer.save();
     res.status(201).json({
       status: "success",
       data: {
-        buyCar: newBuyCar,
+        buyer: newBuyer,
       },
     });
   } catch (error) {
