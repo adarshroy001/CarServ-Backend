@@ -49,18 +49,34 @@ const router = express.Router();
 // Import the controller object
 const carController = require("../Controllers/carController.js");
 
+// Define routes using the controller object's methods
+// router.post(
+//   "/create",
+//   // isAuthenticated,
+//   upload.array("images", 10),
+//   carController.createCar
+// );
+
 router.post(
   "/create",
-  isAuthenticated,
+  isAuthenticated,  
   upload.fields([
-    { name: "images1", maxCount: 50 },
-    { name: "photos", maxCount: 50 },
-    { name: "cImages", maxCount: 50 },
-    { name: "cImages1", maxCount: 50 },
-    { name: "cImages2", maxCount: 50 },
+    { name: "images1", maxCount: 10 },   
+    { name: "cImages", maxCount: 10 },   
+    { name: "cImages1", maxCount: 10 },   
+    { name: "cImages2", maxCount: 10 }, 
   ]),
   carController.createCar
 );
+router.post(
+  "/firstPage",
+  isAuthenticated,  
+  upload.fields([
+    { name: "images1", maxCount: 10 }, 
+  ]),
+  carController.createCarFirstPage
+);
+
 
 // Update car details
 router.put(
@@ -70,19 +86,23 @@ router.put(
   carController.updateCar
 );
 
-router.put("/editListing/:id", isAuthenticated, carController.softDelListing);
+router.put(
+  "/editListing/:id",
+  // isAuthenticated,
+  carController.softDelListing
+);
 
 // Delete car by id
 router.delete("/delete/:id", carController.deleteCar);
 
 // Get all cars
-router.get("/getAll", carController.getAllCars); // Use getAllCars, not getCar
-
-// Get user list cars
-router.get("/getList", isAuthenticated, carController.getAllCars1); //
+router.get("/getAll",  isAuthenticated, carController.getAllCars); // Use getAllCars, not getCar
 
 // Get latest cars
 router.get("/getLatest", carController.getLatest);
+
+//get carlist..
+router.get("/getList", isAuthenticated, carController.getList);
 
 router.get("/makes", carController.getMakes);
 router.get("/models", carController.getModels);

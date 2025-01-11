@@ -36,9 +36,23 @@ const paymentSchema = new mongoose.Schema({
 });
 
 // Car Schema
-const carSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
+const firstPageSchema = new mongoose.Schema({
   askingPrice: { type: Number, required: true },
+  condition: { type: String, required: true },
+  mileage: { type: Number, required: true },
+  servicesHistory: { type: String, required: true },
+  images: [{ type: String }],
+  numberPlate: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  postcode: { type: String, required: true },
+  phoneCommunication: Boolean,
+  emailCommunication: Boolean,
+  agreeToInspection: Boolean,
+});
+
+const detailsSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
   year: { type: Number, required: true },
   datePosted: { type: Date, required: true },
   location: {
@@ -49,7 +63,6 @@ const carSchema = new mongoose.Schema({
     streetaddress: String,
   },
   status: { type: String, required: true },
-  condition: { type: String, required: true },
   transmission: { type: String, required: true },
   fuel: { type: String, required: true },
   color: { type: String, required: true },
@@ -70,11 +83,7 @@ const carSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   soldTo: [Number],
   numberPlate: { type: String, required: true },
-  email: { type: String, required: true },
-  phone: { type: String, required: true },
-  postcode: { type: String, required: true },
-  phoneCommunication: Boolean,
-  emailCommunication: Boolean,
+
   agreeToInspection: Boolean,
   dateOfRegistration: Date,
   features: {
@@ -102,16 +111,21 @@ const carSchema = new mongoose.Schema({
     exported: Boolean,
     imported: Boolean,
   },
-  isDeleted: { type: Boolean, default: false },
+});
 
+const carSchema = new mongoose.Schema({
   // Embed the sub-models
+  firstPage: firstPageSchema,
+  details: detailsSchema,
   certify: certifySchema,
   payment: paymentSchema,
+
+  isDeleted: { type: Boolean, default: false },
 });
 
 // Middleware to log before saving a car
 carSchema.pre("save", function (next) {
-  console.log("Saving car with images:", this.images);
+  console.log("Saving car with images:", this.firstPage.images);
   next();
 });
 

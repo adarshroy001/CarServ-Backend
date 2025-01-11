@@ -1,10 +1,11 @@
 const Car = require("../Models/carModel");
-const mongoose = require("mongoose");
 const User = require("../Models/userModels");
 const { getStaticFilePath, getLocalPath } = require("../utils/helpers");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
+const mongoose = require('mongoose');
+
 
 const createCar = async (req, res) => {
   try {
@@ -17,6 +18,16 @@ const createCar = async (req, res) => {
       email,
       phone,
       postcode,
+      servicesHistory,
+      shortDescription,
+      detailedDescription,
+      grade,
+      agreeToTerms,
+      condition,
+      emailCommunication,
+      phoneCommunication,
+      images1,
+
       fuel,
       transmission,
       bodyType,
@@ -28,14 +39,8 @@ const createCar = async (req, res) => {
       color,
       dateOfRegistration,
       name,
-      year,
-      condition,
-      status,
-      images1,
-      photos,
       // Certify data
       agreeToTerms1,
-      agreeToTerms,
       agreeToTerms2,
       agreeToTerms3,
       agreeToTerms4,
@@ -46,7 +51,6 @@ const createCar = async (req, res) => {
       fullName,
       valuation,
       fullAddress,
-      dateOfBirth,
       cImages,
       cImages1,
       cImages2,
@@ -57,86 +61,44 @@ const createCar = async (req, res) => {
     } = req.body;
 
     // Required fields for validation
-    const requiredFields = {
-      carData: [
-        "name",
-        "askingPrice",
-        "year",
-        "status",
-        "condition",
-        "transmission",
-        "fuel",
-        "color",
-        "mileage",
-        "bodyType",
-        "engineSize",
-        "gearbox",
-        "owners",
-        "serviceHistory",
-        "seats",
-        "doors",
-        "numberPlate",
-        "email",
-        "phone",
-        "postcode",
-        "dateOfRegistration",
-      ],
-      certifyData: [
-        "agreeToTerms1",
-        "agreeToTerms2",
-        "agreeToTerms3",
-        "agreeToTerms4",
-        "agreeToTerms5",
-        "bankName",
-        "sortCode",
-        "accountNumber",
-        "fullName",
-        "valuation",
-        "fullAddress",
-        "dateOfBirth",
-      ],
-      paymentData: ["amount", "agreeToTermsPayment"],
-    };
+    // const requiredFields = {
+    //   carData: ['name', 'askingPrice', 'year', 'location', 'status', 'condition',
+    //             'transmission', 'fuel', 'color', 'mileage', 'bodyType',
+    //             'engineSize', 'gearbox', 'owners', 'serviceHistory', 'seats',
+    //             'doors', 'numberPlate', 'email', 'phone', 'postcode',
+    //             'dateOfRegistration'],
+    //   certifyData: ['agreeToTerms', 'agreeToTerms1', 'agreeToTerms2',
+    //                 'agreeToTerms3', 'agreeToTerms4', 'agreeToTerms5',
+    //                 'bankName', 'sortCode', 'accountNumber', 'fullName',
+    //                 'valuation', 'fullAddress'],
+    //   paymentData: ['amount', 'agreeToTermsPayment']
+    // };
 
-    // Function to check for missing fields
-    const findMissingFields = (fields, data) => {
-      return fields.filter((field) => !data[field] && data[field] !== false);
-    };
+    // // Function to check for missing fields
+    // const findMissingFields = (fields, data) => {
+    //   return fields.filter(field => !data[field] && data[field] !== false);
+    // };
 
-    // Check for missing fields
-    const missingCarData = findMissingFields(requiredFields.carData, req.body);
-    const missingCertifyData = findMissingFields(
-      requiredFields.certifyData,
-      req.body
-    );
-    const missingPaymentData = findMissingFields(
-      requiredFields.paymentData,
-      req.body
-    );
+    // // Check for missing fields
+    // const missingCarData = findMissingFields(requiredFields.carData, req.body);
+    // const missingCertifyData = findMissingFields(requiredFields.certifyData, req.body);
+    // const missingPaymentData = findMissingFields(requiredFields.paymentData, req.body);
 
-    if (
-      missingCarData.length ||
-      missingCertifyData.length ||
-      missingPaymentData.length
-    ) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Missing required fields",
-        missingFields: {
-          carData: missingCarData,
-          certifyData: missingCertifyData,
-          paymentData: missingPaymentData,
-        },
-      });
-    }
-
-    console.log("Uploaded files:", req.files);
+    // if (missingCarData.length || missingCertifyData.length || missingPaymentData.length) {
+    //   return res.status(400).json({
+    //     status: "fail",
+    //     message: "Missing required fields",
+    //     missingFields: {
+    //       carData: missingCarData,
+    //       certifyData: missingCertifyData,
+    //       paymentData: missingPaymentData
+    //     }
+    //   });
+    // }
 
     // Handle image uploads
     const imageUrls =
       req.files?.images1?.map((file) => `/images/${file.filename}`) || [];
-    const imageUrls1 =
-      req.files?.photos?.map((file) => `/images/${file.filename}`) || [];
     const cImagesUrls =
       req.files?.cImages?.map((file) => `/images/${file.filename}`) || [];
     const cImages1Urls =
@@ -145,32 +107,42 @@ const createCar = async (req, res) => {
       req.files?.cImages2?.map((file) => `/images/${file.filename}`) || [];
 
     // Car data
-    const carData = {
-      name,
+    // const carData = {
+    //   name,
+    //   // year: Number(year),
+    //   location,
+    //   status,
+    //   transmission: fuel,
+    //   fuel: bodyType,
+    //   color,
+    //   engineSize: Number(engineSize),
+    //   gearbox: owners,
+    //   owners: Number(owners),
+    //   seats: Number(seats),
+    //   doors: Number(doors),
+
+    //   dateOfRegistration,
+    //   datePosted: datePosted || new Date(),
+    //   owner: req.session.user._id,
+    // };
+
+    const firstPage = {
       askingPrice: Number(askingPrice),
-      year: Number(year),
-      status,
       condition,
-      transmission,
-      fuel,
-      bodyType,
-      color,
       mileage: Number(mileage),
-      engineSize: Number(engineSize),
-      gearbox: owners,
-      owners: Number(owners),
       serviceHistory,
-      seats: Number(seats),
-      doors: Number(doors),
-      numberPlate,
+      images: imageUrls,
+      agreeToInspection: agreeToTerms === "true",
+      phoneCommunication: phoneCommunication === "true",
       email: email,
       phone: phone,
       postcode: postcode,
-      dateOfRegistration,
-      images: imageUrls,
-      images1: imageUrls1,
-      datePosted: new Date(),
-      owner: req.session.user._id,
+      numberPlate,
+      grade,
+      detailedDescription,
+      shortDescription,
+      servicesHistory,
+      emailCommunication: emailCommunication === "true",
     };
 
     // Certify data
@@ -187,10 +159,9 @@ const createCar = async (req, res) => {
       fullName,
       valuation,
       fullAddress,
-      allCar: cImagesUrls,
-      cImages: cImages1Urls,
-      CImages1: cImages2Urls,
-      dateOfBirth: new Date(dateOfBirth),
+      images: cImagesUrls,
+      images1: cImages1Urls,
+      images2: cImages2Urls,
     };
 
     // Payment data
@@ -201,7 +172,8 @@ const createCar = async (req, res) => {
 
     // Combine all data into one object
     const combinedData = {
-      ...carData,
+      // ...carData,
+      firstPage: firstPage,
       certify: certifyData,
       payment: paymentData,
     };
@@ -220,6 +192,109 @@ const createCar = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+
+
+const createCarFirstPage = async (req, res) => {
+  try {
+    // Destructure the necessary fields from req.body
+   const firstPage = req.body;
+
+    // Required fields for validation
+    // const requiredFields = {
+    //   carData: ['name', 'askingPrice', 'year', 'location', 'status', 'condition',
+    //             'transmission', 'fuel', 'color', 'mileage', 'bodyType',
+    //             'engineSize', 'gearbox', 'owners', 'serviceHistory', 'seats',
+    //             'doors', 'numberPlate', 'email', 'phone', 'postcode',
+    //             'dateOfRegistration'],
+    //   certifyData: ['agreeToTerms', 'agreeToTerms1', 'agreeToTerms2',
+    //                 'agreeToTerms3', 'agreeToTerms4', 'agreeToTerms5',
+    //                 'bankName', 'sortCode', 'accountNumber', 'fullName',
+    //                 'valuation', 'fullAddress'],
+    //   paymentData: ['amount', 'agreeToTermsPayment']
+    // };
+
+    // // Function to check for missing fields
+    // const findMissingFields = (fields, data) => {
+    //   return fields.filter(field => !data[field] && data[field] !== false);
+    // };
+
+    // // Check for missing fields
+    // const missingCarData = findMissingFields(requiredFields.carData, req.body);
+    // const missingCertifyData = findMissingFields(requiredFields.certifyData, req.body);
+    // const missingPaymentData = findMissingFields(requiredFields.paymentData, req.body);
+
+    // if (missingCarData.length || missingCertifyData.length || missingPaymentData.length) {
+    //   return res.status(400).json({
+    //     status: "fail",
+    //     message: "Missing required fields",
+    //     missingFields: {
+    //       carData: missingCarData,
+    //       certifyData: missingCertifyData,
+    //       paymentData: missingPaymentData
+    //     }
+    //   });
+    // }
+
+    // Handle image uploads
+    console.log(req.files);
+
+    const imageUrls =
+      req.files?.images1?.map((file) => `/images/${file.filename}`) || [];
+    console.log("pp",imageUrls)
+    firstPage.images = imageUrls;
+    
+
+    // Car data
+    // const carData = {
+    //   name,
+    //   // year: Number(year),
+    //   location,
+    //   status,
+    //   transmission: fuel,
+    //   fuel: bodyType,
+    //   color,
+    //   engineSize: Number(engineSize),
+    //   gearbox: owners,
+    //   owners: Number(owners),
+    //   seats: Number(seats),
+    //   doors: Number(doors),
+
+    //   dateOfRegistration,
+    //   datePosted: datePosted || new Date(),
+    //   owner: req.session.user._id,
+    // };
+
+    firstPage.askingPrice = Number(firstPage.askingPrice);
+    firstPage.mileage = Number(firstPage.mileage);
+    
+    firstPage.images = imageUrls,
+      firstPage.agreeToInspection= firstPage.agreeToTerms === "true",
+      firstPage.phoneCommunication =  firstPage.phoneCommunication === "true",
+    
+      firstPage.emailCommunication = firstPage.emailCommunication === "true"
+  
+
+const firstPageData = {
+  firstPage: firstPage
+};
+
+    // Save the combined data to the database
+    const newCar = new Car(firstPageData);
+    const savedCar = await newCar.save();
+
+    // Respond with the saved car data
+    res.status(201).json({
+      status: "success",
+      data: { car: savedCar.toObject() },
+    });
+  } catch (error) {
+    console.error("Error saving car:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 
 // Controller function to update car details
 const updateCar = async (req, res) => {
@@ -260,7 +335,7 @@ const updateCar = async (req, res) => {
       serviceHistory,
       seats,
       doors,
-
+      agreeToInspection,
       dateOfRegistration,
       //Certify
 
@@ -485,14 +560,14 @@ const deleteCar = async (req, res) => {
 const getAllCars = async (req, res) => {
   try {
     const carList = await Car.find({});
-    console.log(
-      "Retrieved cars:",
-      carList.map((car) => ({
-        id: car._id,
-        name: car.name,
-        imageCount: car.images.length,
-      }))
-    );
+    // console.log(
+    //   "Retrieved cars:",
+    //   // carList.map((car) => ({
+    //   //   id: car._id,
+    //   //   // name: car.name,
+    //   //   // imageCount: car.images.length,
+    //   // }))
+    // );
     console.log("Cars data being sent:", carList); // Added log
     res.status(200).json(carList);
   } catch (error) {
@@ -500,32 +575,6 @@ const getAllCars = async (req, res) => {
     res.status(500).json({ message: "Error retrieving cars" });
   }
 };
-
-async function getAllCars1(req, res) {
-  try {
-    const userId = req.session.user._id;
-    const carList = await Car.find({
-      owner: new mongoose.Types.ObjectId(userId),
-    });
-
-    if (!carList.length) {
-      return res.status(404).json({ message: "No cars found for this user." });
-    }
-
-    const formattedCars = carList.map((car) => ({
-      id: car._id,
-      name: car.name,
-      askingPrice: car.askingPrice,
-      year: car.year,
-      imageCount: car.images.length || 0,
-    }));
-
-    res.status(200).json(formattedCars);
-  } catch (error) {
-    console.error("Get All Cars Error:", error);
-    res.status(500).json({ message: "An error occurred while fetching cars." });
-  }
-}
 
 // Function to retrieve latest cars
 const getLatest = async (req, res) => {
@@ -608,6 +657,7 @@ const getCar = async (req, res) => {
   }
 };
 
+
 const getVehicleDataByVRN = async (req, res) => {
   try {
     const apiKey = process.env.UK_VEHICLE_API_KEY;
@@ -665,12 +715,34 @@ const softDelListing = async (req, res) => {
   }
 };
 
+
+
+
+const getList = async (req, res) => {
+  try {
+    // Check if the user is authenticated
+    if (!req.session.user || !req.session.user._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Fetch the list of cars
+    const carList = await Car.find({});
+    console.log("Cars data being sent:", carList); // Added log
+
+    // Send the list of cars to the client
+    res.status(200).json(carList);
+  } catch (error) {
+    console.error("Get All Cars Error:", error);
+    res.status(500).json({ message: "Error retrieving cars" });
+  }
+};
+
 module.exports = {
   createCar,
+  createCarFirstPage,
   updateCar,
   deleteCar,
   getAllCars,
-  getAllCars1,
   getLatest,
   getMakes,
   getModels,
@@ -678,4 +750,5 @@ module.exports = {
   getCar,
   getVehicleDataByVRN,
   softDelListing,
+  getList
 };
