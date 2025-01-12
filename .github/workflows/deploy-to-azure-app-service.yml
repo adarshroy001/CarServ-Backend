@@ -1,51 +1,43 @@
-name: Deploy React App to Azure App Service
+name: Manual Deployment
 
 on:
-  workflow_dispatch:  # Allows manual trigger of the workflow
+  workflow_dispatch:  # Allows manual trigger
+    inputs:
+      environment:
+        description: 'Environment to deploy (prod/uat/dev)'
+        required: true
+      branch:
+        description: 'Branch to deploy'
+        required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/checkout@v3
         with:
-          node-version: 22.11.0  # Specify your Node.js version
+          ref: ${{ github.event.inputs.branch }}
 
-      # Step 3: Install dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
       - name: Install Dependencies
         run: npm install
 
-      # Step 4: Build the React app
-      - name: Build React App
-        run: npm run build
-         
-      # Step 5: Azure Login
-      - name: Azure Login action
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: true
-      
-      - name: Delete all files from App Service
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: Liveautos-server
-          package: '' # Empty string to delete all files
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+      - name: Build Application
+        run: |
+          if [ -f package.json ]; then
+            npm run build
+          fi
 
-      # Step 5: Deploy to Azure App Service
-      - name: Deploy to Azure App Service
+      - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "Liveautos-server"  # Replace with the name of your Azure App Service
-          slot-name: "production"             # Change if you're using deployment slots
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./dist                    # Path to the built React app
-          deployment_action: 'upload' # Add this line
+          app-name: mern-${{ github.event.inputs.environment }}-api # For backend, change to `api`
+          publish-profile: ${{ secrets[`AZURE_WEBAPP_${{ github.event.inputs.environment | upper }}_BACKEND_PUBLISH_PROFILE`] }}
+          package: ./build
+
