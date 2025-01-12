@@ -37,7 +37,7 @@ jobs:
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
-          app-name: mern-${{ github.event.inputs.environment }}-api # For backend, change to `api`
+          app-name: ${{ secrets.AZURE_APP_NAME_${{ github.event.inputs.branch | upper }}_API }}
           publish-profile: ${{ secrets[`AZURE_WEBAPP_${{ github.event.inputs.environment | upper }}_BACKEND_PUBLISH_PROFILE`] }}
           package: ./build
 
