@@ -1,0 +1,39 @@
+name: Deploy API to Production
+
+on:
+  workflow_dispatch: # Trigger manually for production deployment
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # Use your app's Node.js version
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run tests (optional but recommended)
+      - name: Run tests
+        run: npm test
+
+      # Step 5: Build the application
+      - name: Build API
+        run: npm run build
+
+      # Step 6: Deploy to Azure App Service
+      - name: Deploy API to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_APP_NAME_PROD_API }} # Name of the Azure App Service for backend
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API_PROD }} # Publish profile secret
+          package: ./ # Path to the backend package
