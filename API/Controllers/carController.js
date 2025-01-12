@@ -4,185 +4,136 @@ const { getStaticFilePath, getLocalPath } = require("../utils/helpers");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
-const mongoose = require('mongoose');
-
+const mongoose = require("mongoose");
 
 const createCar = async (req, res) => {
   try {
-    // Destructure the necessary fields from req.body
-    const {
-      // Car data
-      numberPlate,
-      mileage,
-      askingPrice,
-      email,
-      phone,
-      postcode,
-      servicesHistory,
-      shortDescription,
-      detailedDescription,
-      grade,
-      agreeToTerms,
-      condition,
-      emailCommunication,
-      phoneCommunication,
-      images1,
+    const first = req.body;
+    console.log("kk", first);
 
-      fuel,
-      transmission,
-      bodyType,
-      engineSize,
-      owners,
-      serviceHistory,
-      seats,
-      doors,
-      color,
-      dateOfRegistration,
-      name,
-      // Certify data
-      agreeToTerms1,
-      agreeToTerms2,
-      agreeToTerms3,
-      agreeToTerms4,
-      agreeToTerms5,
-      bankName,
-      sortCode,
-      accountNumber,
-      fullName,
-      valuation,
-      fullAddress,
-      cImages,
-      cImages1,
-      cImages2,
+    // Validate required fields
+    if (!first.name || !first.askingPrice || !first.year) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
 
-      // Payment data
-      amount,
-      agreeToTerms: agreeToTermsPayment,
-    } = req.body;
+    // Process image URLs
+    const imageUrls = (req.files?.firstPageImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
 
-    // Required fields for validation
-    // const requiredFields = {
-    //   carData: ['name', 'askingPrice', 'year', 'location', 'status', 'condition',
-    //             'transmission', 'fuel', 'color', 'mileage', 'bodyType',
-    //             'engineSize', 'gearbox', 'owners', 'serviceHistory', 'seats',
-    //             'doors', 'numberPlate', 'email', 'phone', 'postcode',
-    //             'dateOfRegistration'],
-    //   certifyData: ['agreeToTerms', 'agreeToTerms1', 'agreeToTerms2',
-    //                 'agreeToTerms3', 'agreeToTerms4', 'agreeToTerms5',
-    //                 'bankName', 'sortCode', 'accountNumber', 'fullName',
-    //                 'valuation', 'fullAddress'],
-    //   paymentData: ['amount', 'agreeToTermsPayment']
-    // };
-
-    // // Function to check for missing fields
-    // const findMissingFields = (fields, data) => {
-    //   return fields.filter(field => !data[field] && data[field] !== false);
-    // };
-
-    // // Check for missing fields
-    // const missingCarData = findMissingFields(requiredFields.carData, req.body);
-    // const missingCertifyData = findMissingFields(requiredFields.certifyData, req.body);
-    // const missingPaymentData = findMissingFields(requiredFields.paymentData, req.body);
-
-    // if (missingCarData.length || missingCertifyData.length || missingPaymentData.length) {
-    //   return res.status(400).json({
-    //     status: "fail",
-    //     message: "Missing required fields",
-    //     missingFields: {
-    //       carData: missingCarData,
-    //       certifyData: missingCertifyData,
-    //       paymentData: missingPaymentData
-    //     }
-    //   });
-    // }
-
-    // Handle image uploads
-    const imageUrls =
-      req.files?.images1?.map((file) => `/images/${file.filename}`) || [];
-    const cImagesUrls =
-      req.files?.cImages?.map((file) => `/images/${file.filename}`) || [];
-    const cImages1Urls =
-      req.files?.cImages1?.map((file) => `/images/${file.filename}`) || [];
-    const cImages2Urls =
-      req.files?.cImages2?.map((file) => `/images/${file.filename}`) || [];
-
-    // Car data
-    // const carData = {
-    //   name,
-    //   // year: Number(year),
-    //   location,
-    //   status,
-    //   transmission: fuel,
-    //   fuel: bodyType,
-    //   color,
-    //   engineSize: Number(engineSize),
-    //   gearbox: owners,
-    //   owners: Number(owners),
-    //   seats: Number(seats),
-    //   doors: Number(doors),
-
-    //   dateOfRegistration,
-    //   datePosted: datePosted || new Date(),
-    //   owner: req.session.user._id,
-    // };
-
-    const firstPage = {
-      askingPrice: Number(askingPrice),
-      condition,
-      mileage: Number(mileage),
-      serviceHistory,
+    // Prepare car data
+    const carData = {
+      name: first.name,
+      askingPrice: Number(first.askingPrice),
+      year: Number(first.year),
+      status: first.status,
+      condition: first.condition,
+      transmission: first.transmission,
+      fuel: first.fuelType,
+      color: first.color,
+      mileage: Number(first.mileage),
+      engineSize: Number(first.engineSize),
+      gearbox: first.gearbox,
+      owners: Number(first.owners),
+      serviceHistory: first.serviceHistory,
+      bodyType: first.bodyType,
+      seats: Number(first.seats),
+      doors: Number(first.doors),
+      numberPlate: first.numberPlate,
+      email: first.email,
+      phone: first.phone,
+      postcode: first.postcode,
+      phoneCommunication: first.phoneCommunication === "true",
+      emailCommunication: first.emailCommunication === "true",
+      agreeToInspection: first.agreeToInspection === "true",
+      dateOfRegistration: first.dateOfRegistration,
       images: imageUrls,
-      agreeToInspection: agreeToTerms === "true",
-      phoneCommunication: phoneCommunication === "true",
-      email: email,
-      phone: phone,
-      postcode: postcode,
-      numberPlate,
-      grade,
-      detailedDescription,
-      shortDescription,
-      servicesHistory,
-      emailCommunication: emailCommunication === "true",
+      datePosted: first.datePosted || new Date(),
+      owner: req.session?.user?._id,
     };
 
-    // Certify data
-    const certifyData = {
-      agreeToTerms: agreeToTerms === "true",
-      agreeToTerms1: agreeToTerms1 === "true",
-      agreeToTerms2: agreeToTerms2 === "true",
-      agreeToTerms3: agreeToTerms3 === "true",
-      agreeToTerms4: agreeToTerms4 === "true",
-      agreeToTerms5: agreeToTerms5 === "true",
-      bankName,
-      sortCode,
-      accountNumber,
-      fullName,
-      valuation,
-      fullAddress,
-      images: cImagesUrls,
-      images1: cImages1Urls,
-      images2: cImages2Urls,
+    // Save to the database
+    const newCar = new Car(carData);
+    const savedCar = await newCar.save();
+
+    // Respond with saved car data
+    res.status(201).json({
+      status: "success",
+      data: { car: savedCar.toObject() },
+    });
+  } catch (error) {
+    console.error("Error saving car:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const createCarDetails = async (req, res) => {
+  try {
+    const first = req.body;
+    const first1 = req.files;
+    console.log("i", first);
+
+    // Validate required fields
+    if (!first.name || !first.askingPrice || !first.year) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // Process image URLs
+    const imageUrls = (req.files?.firstPageImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const imageUrls1 = (req.files?.detailsImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+
+    // Prepare car data
+    const carData = {
+      name: first.name,
+      askingPrice: Number(first.askingPrice),
+      year: Number(first.year),
+      status: first.status,
+      condition: first.condition,
+      transmission: first.transmission,
+      fuel: first.fuelType,
+      color: first.color,
+      mileage: Number(first.mileage),
+      engineSize: Number(first.engineSize),
+      gearbox: first.gearbox,
+      owners: Number(first.owners),
+      serviceHistory: first.serviceHistory,
+      bodyType: first.bodyType,
+      seats: Number(first.seats),
+      doors: Number(first.doors),
+      numberPlate: first.numberPlate,
+      email: first.email,
+      phone: first.phone,
+      postcode: first.postcode,
+      phoneCommunication: first.phoneCommunication === "true",
+      emailCommunication: first.emailCommunication === "true",
+      agreeToInspection: first.agreeToInspection === "true",
+      dateOfRegistration: first.dateOfRegistration,
+      images: imageUrls,
+      datePosted: first.datePosted || new Date(),
+      owner: req.session?.user?._id,
     };
 
-    // Payment data
-    const paymentData = {
-      amount: Number(amount),
-      agreeToTerms: agreeToTermsPayment === "true",
+    const parsedFeatures = JSON.parse(first.features);
+    const DetailsData = {
+      features: parsedFeatures,
+      knownIssues: first.knownIssues,
+      majorRepairs: first.majorRepairs,
+      images: imageUrls1,
     };
 
-    // Combine all data into one object
     const combinedData = {
-      // ...carData,
-      firstPage: firstPage,
-      certify: certifyData,
-      payment: paymentData,
+      ...carData,
+      details: DetailsData,
     };
-
-    // Save the combined data to the database
+    // Save to the database
     const newCar = new Car(combinedData);
     const savedCar = await newCar.save();
 
-    // Respond with the saved car data
+    // Respond with saved car data
     res.status(201).json({
       status: "success",
       data: { car: savedCar.toObject() },
@@ -193,98 +144,103 @@ const createCar = async (req, res) => {
   }
 };
 
-
-
-
-const createCarFirstPage = async (req, res) => {
+const createCarCertify = async (req, res) => {
   try {
-    // Destructure the necessary fields from req.body
-   const firstPage = req.body;
+    const first = req.body;
+    const first1 = req.files;
+    // console.log("i",first1)
+    console.log("i111", first1);
 
-    // Required fields for validation
-    // const requiredFields = {
-    //   carData: ['name', 'askingPrice', 'year', 'location', 'status', 'condition',
-    //             'transmission', 'fuel', 'color', 'mileage', 'bodyType',
-    //             'engineSize', 'gearbox', 'owners', 'serviceHistory', 'seats',
-    //             'doors', 'numberPlate', 'email', 'phone', 'postcode',
-    //             'dateOfRegistration'],
-    //   certifyData: ['agreeToTerms', 'agreeToTerms1', 'agreeToTerms2',
-    //                 'agreeToTerms3', 'agreeToTerms4', 'agreeToTerms5',
-    //                 'bankName', 'sortCode', 'accountNumber', 'fullName',
-    //                 'valuation', 'fullAddress'],
-    //   paymentData: ['amount', 'agreeToTermsPayment']
-    // };
+    // Validate required fields
+    if (!first.name || !first.askingPrice || !first.year) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
 
-    // // Function to check for missing fields
-    // const findMissingFields = (fields, data) => {
-    //   return fields.filter(field => !data[field] && data[field] !== false);
-    // };
+    // Process image URLs
+    const imageUrls = (req.files?.firstPageImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const imageUrls1 = (req.files?.detailsImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const carImages = (req.files?.carImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const serviceRecords = (req.files?.serviceRecords || []).map(
+      (file) => `/doc/${file.filename}`
+    );
+    const logbook = (req.files?.logbook || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const identy = (req.files?.identy || []).map(
+      (file) => `/images/${file.filename}`
+    );
 
-    // // Check for missing fields
-    // const missingCarData = findMissingFields(requiredFields.carData, req.body);
-    // const missingCertifyData = findMissingFields(requiredFields.certifyData, req.body);
-    // const missingPaymentData = findMissingFields(requiredFields.paymentData, req.body);
+    // Prepare car data
+    const carData = {
+      name: first.name,
+      askingPrice: Number(first.askingPrice),
+      year: Number(first.year),
+      status: first.status,
+      condition: first.condition,
+      transmission: first.transmission,
+      fuel: first.fuelType,
+      color: first.color,
+      mileage: Number(first.mileage),
+      engineSize: Number(first.engineSize),
+      gearbox: first.gearbox,
+      owners: Number(first.owners),
+      serviceHistory: first.serviceHistory,
+      bodyType: first.bodyType,
+      seats: Number(first.seats),
+      doors: Number(first.doors),
+      numberPlate: first.numberPlate,
+      email: first.email,
+      phone: first.phone,
+      postcode: first.postcode,
+      phoneCommunication: first.phoneCommunication === "true",
+      emailCommunication: first.emailCommunication === "true",
+      agreeToInspection: first.agreeToInspection === "true",
+      dateOfRegistration: first.dateOfRegistration,
+      images: imageUrls,
+      datePosted: first.datePosted || new Date(),
+      owner: req.session?.user?._id,
+    };
 
-    // if (missingCarData.length || missingCertifyData.length || missingPaymentData.length) {
-    //   return res.status(400).json({
-    //     status: "fail",
-    //     message: "Missing required fields",
-    //     missingFields: {
-    //       carData: missingCarData,
-    //       certifyData: missingCertifyData,
-    //       paymentData: missingPaymentData
-    //     }
-    //   });
-    // }
+    const parsedFeatures = JSON.parse(first.features);
+    const DetailsData = {
+      features: parsedFeatures,
+      knownIssues: first.knownIssues,
+      majorRepairs: first.majorRepairs,
+      images: imageUrls1,
+    };
+    const certifyData = {
+      agreeToTermsPay: first.agreeToTermsPay === "true",
+      agreeToTermsReturn: first.agreeToTermsReturn === "true",
+      agreeToTermsWebsite: first.agreeToTermsWebsite === "true",
+      bankName: first.bankName,
+      sortCode: first.sortCode,
+      accountNumber: first.accountNumber,
+      fullName: first.fullName,
+      valuation: first.valuation,
+      fullAddress: first.fullAddress,
+      carImages: carImages,
+      serviceRecords: serviceRecords,
+      logbook: logbook,
+      identification: identy,
+      dateOfBirth: new Date(first.dateOfBirth),
+    };
 
-    // Handle image uploads
-    console.log(req.files);
-
-    const imageUrls =
-      req.files?.images1?.map((file) => `/images/${file.filename}`) || [];
-    console.log("pp",imageUrls)
-    firstPage.images = imageUrls;
-    
-
-    // Car data
-    // const carData = {
-    //   name,
-    //   // year: Number(year),
-    //   location,
-    //   status,
-    //   transmission: fuel,
-    //   fuel: bodyType,
-    //   color,
-    //   engineSize: Number(engineSize),
-    //   gearbox: owners,
-    //   owners: Number(owners),
-    //   seats: Number(seats),
-    //   doors: Number(doors),
-
-    //   dateOfRegistration,
-    //   datePosted: datePosted || new Date(),
-    //   owner: req.session.user._id,
-    // };
-
-    firstPage.askingPrice = Number(firstPage.askingPrice);
-    firstPage.mileage = Number(firstPage.mileage);
-    
-    firstPage.images = imageUrls,
-      firstPage.agreeToInspection= firstPage.agreeToTerms === "true",
-      firstPage.phoneCommunication =  firstPage.phoneCommunication === "true",
-    
-      firstPage.emailCommunication = firstPage.emailCommunication === "true"
-  
-
-const firstPageData = {
-  firstPage: firstPage
-};
-
-    // Save the combined data to the database
-    const newCar = new Car(firstPageData);
+    const combinedData = {
+      ...carData,
+      details: DetailsData,
+      certify: certifyData,
+    };
+    // Save to the database
+    const newCar = new Car(combinedData);
     const savedCar = await newCar.save();
 
-    // Respond with the saved car data
+    // Respond with saved car data
     res.status(201).json({
       status: "success",
       data: { car: savedCar.toObject() },
@@ -295,6 +251,119 @@ const firstPageData = {
   }
 };
 
+const createCarAdvertise = async (req, res) => {
+  try {
+    const first = req.body;
+    const first1 = req.files;
+    // console.log("i",first1)
+    console.log("i111", first1);
+
+    // Validate required fields
+    if (!first.name || !first.askingPrice || !first.year) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // Process image URLs
+    const imageUrls = (req.files?.firstPageImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const imageUrls1 = (req.files?.detailsImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const carImages = (req.files?.carImages || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const serviceRecords = (req.files?.serviceRecords || []).map(
+      (file) => `/doc/${file.filename}`
+    );
+    const logbook = (req.files?.logbook || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    const identy = (req.files?.identy || []).map(
+      (file) => `/images/${file.filename}`
+    );
+
+    // Prepare car data
+    const carData = {
+      name: first.name,
+      askingPrice: Number(first.askingPrice),
+      year: Number(first.year),
+      status: first.status,
+      condition: first.condition,
+      transmission: first.transmission,
+      fuel: first.fuelType,
+      color: first.color,
+      mileage: Number(first.mileage),
+      engineSize: Number(first.engineSize),
+      gearbox: first.gearbox,
+      owners: Number(first.owners),
+      serviceHistory: first.serviceHistory,
+      bodyType: first.bodyType,
+      seats: Number(first.seats),
+      doors: Number(first.doors),
+      numberPlate: first.numberPlate,
+      email: first.email,
+      phone: first.phone,
+      postcode: first.postcode,
+      phoneCommunication: first.phoneCommunication === "true",
+      emailCommunication: first.emailCommunication === "true",
+      agreeToInspection: first.agreeToInspection === "true",
+      dateOfRegistration: first.dateOfRegistration,
+      images: imageUrls,
+      datePosted: first.datePosted || new Date(),
+      owner: req.session?.user?._id,
+    };
+
+    const parsedFeatures = JSON.parse(first.features);
+    const DetailsData = {
+      features: parsedFeatures,
+      knownIssues: first.knownIssues,
+      majorRepairs: first.majorRepairs,
+      images: imageUrls1,
+    };
+    const certifyData = {
+      agreeToTermsPay: first.agreeToTermsPay === "true",
+      agreeToTermsReturn: first.agreeToTermsReturn === "true",
+      agreeToTermsWebsite: first.agreeToTermsWebsite === "true",
+      bankName: first.bankName,
+      sortCode: first.sortCode,
+      accountNumber: first.accountNumber,
+      fullName: first.fullName,
+      valuation: first.valuation,
+      fullAddress: first.fullAddress,
+      carImages: carImages,
+      serviceRecords: serviceRecords,
+      logbook: logbook,
+      identification: identy,
+      dateOfBirth: new Date(first.dateOfBirth),
+    };
+
+    // payment
+    const paymentData = {
+      amount: Number(first.amount),
+      agreeToTerms: first.agreeToTermsPayment === "true",
+    };
+
+    const combinedData = {
+      ...carData,
+      details: DetailsData,
+      certify: certifyData,
+      payment: paymentData,
+    };
+    // Save to the database
+    const newCar = new Car(combinedData);
+    const savedCar = await newCar.save();
+
+    // Respond with saved car data
+    res.status(201).json({
+      status: "success",
+      data: { car: savedCar.toObject() },
+    });
+  } catch (error) {
+    console.error("Error saving car:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 // Controller function to update car details
 const updateCar = async (req, res) => {
@@ -657,7 +726,6 @@ const getCar = async (req, res) => {
   }
 };
 
-
 const getVehicleDataByVRN = async (req, res) => {
   try {
     const apiKey = process.env.UK_VEHICLE_API_KEY;
@@ -715,9 +783,6 @@ const softDelListing = async (req, res) => {
   }
 };
 
-
-
-
 const getList = async (req, res) => {
   try {
     // Check if the user is authenticated
@@ -739,7 +804,9 @@ const getList = async (req, res) => {
 
 module.exports = {
   createCar,
-  createCarFirstPage,
+  createCarDetails,
+  createCarCertify,
+  createCarAdvertise,
   updateCar,
   deleteCar,
   getAllCars,
@@ -750,5 +817,5 @@ module.exports = {
   getCar,
   getVehicleDataByVRN,
   softDelListing,
-  getList
+  getList,
 };

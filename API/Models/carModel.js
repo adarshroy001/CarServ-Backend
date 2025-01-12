@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 // Define the Certify Sub-Model
@@ -8,18 +9,17 @@ const certifySchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   fullAddress: { type: String, required: true },
   dateOfBirth: { type: String, required: true },
-  allCar: {
+  carImages: {
     type: [String],
     required: true,
   },
   serviceRecords: { type: [String], required: false },
-  cImages: { type: [String], required: false },
-  CImages1: { type: [String], required: true },
+  logbook: { type: [String], required: false },
+  identification: { type: [String], required: true },
   valuation: { type: String, required: true },
-  agreeToTerms2: { type: Boolean, required: true },
-  agreeToTerms3: { type: Boolean, required: true },
-  agreeToTerms4: { type: Boolean, required: true },
-  agreeToTerms5: { type: Boolean, required: true },
+  agreeToTermsPay: { type: Boolean, required: true },
+  agreeToTermsReturn: { type: Boolean, required: true },
+  agreeToTermsWebsite: { type: Boolean, required: true },
 });
 
 // Define the Payment Sub-Model
@@ -35,24 +35,26 @@ const paymentSchema = new mongoose.Schema({
   },
 });
 
-// Car Schema
-const firstPageSchema = new mongoose.Schema({
-  askingPrice: { type: Number, required: true },
-  condition: { type: String, required: true },
-  mileage: { type: Number, required: true },
-  servicesHistory: { type: String, required: true },
+const detailsSchema = new mongoose.Schema({
+  features: {
+    EngineAndPerformance: [String],
+    Safety: [String],
+    Checks: [String],
+    RunningCosts: [String],
+    Safety: [String],
+    ComfortAndConvenience: [String],
+    ExteriorFeatures: [String],
+    Other: [String],
+  },
   images: [{ type: String }],
-  numberPlate: { type: String, required: true },
-  email: { type: String, required: true },
-  phone: { type: String, required: true },
-  postcode: { type: String, required: true },
-  phoneCommunication: Boolean,
-  emailCommunication: Boolean,
-  agreeToInspection: Boolean,
+  knownIssues: { type: String },
+  majorRepairs: [{ type: String }],
 });
 
-const detailsSchema = new mongoose.Schema({
+// Car Schema
+const carSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
+  askingPrice: { type: Number, required: true },
   year: { type: Number, required: true },
   datePosted: { type: Date, required: true },
   location: {
@@ -63,6 +65,7 @@ const detailsSchema = new mongoose.Schema({
     streetaddress: String,
   },
   status: { type: String, required: true },
+  condition: { type: String, required: true },
   transmission: { type: String, required: true },
   fuel: { type: String, required: true },
   color: { type: String, required: true },
@@ -79,20 +82,16 @@ const detailsSchema = new mongoose.Schema({
   interior: [String],
   safety: [String],
   images: [{ type: String }],
-  images1: [{ type: String }],
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   soldTo: [Number],
   numberPlate: { type: String, required: true },
-
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  postcode: { type: String, required: true },
+  phoneCommunication: Boolean,
+  emailCommunication: Boolean,
   agreeToInspection: Boolean,
   dateOfRegistration: Date,
-  features: {
-    EngineAndPerformance: [String],
-    Safety: [String],
-    ComfortAndConvenience: [String],
-    ExteriorFeatures: [String],
-    Other: [String],
-  },
   runningCosts: {
     fuelEconomy: {
       urban: String,
@@ -111,21 +110,17 @@ const detailsSchema = new mongoose.Schema({
     exported: Boolean,
     imported: Boolean,
   },
-});
+  isDeleted: { type: Boolean, default: false },
 
-const carSchema = new mongoose.Schema({
   // Embed the sub-models
-  firstPage: firstPageSchema,
   details: detailsSchema,
   certify: certifySchema,
   payment: paymentSchema,
-
-  isDeleted: { type: Boolean, default: false },
 });
 
 // Middleware to log before saving a car
 carSchema.pre("save", function (next) {
-  console.log("Saving car with images:", this.firstPage.images);
+  console.log("Saving car with images:", this.images);
   next();
 });
 

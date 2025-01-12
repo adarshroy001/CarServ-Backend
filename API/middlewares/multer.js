@@ -1,43 +1,63 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+// Ensure that the target directory exists
+const dir = "./public/images";
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
 
 // Configure storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./public/images");
+    cb(null, dir); // Store files in the 'images' folder
   },
   filename: function (req, file, cb) {
-    let fileExtension = "";
-    if (file.originalname.split(".").length > 1) {
-      fileExtension = file.originalname.substring(
-        file.originalname.lastIndexOf(".")
-      );
-    }
+    let fileExtension = path.extname(file.originalname);
     const filenameWithoutExtension = file.originalname
       .toLowerCase()
       .split(" ")
       .join("-")
-      ?.split(".")[0];
+      .split(".")[0]; // Remove file extension from filename
+
+    // Ensure the filename only contains safe characters
+    const sanitizedFilename = filenameWithoutExtension.replace(/[^a-z0-9-]/g, "");
+
     cb(
       null,
-      filenameWithoutExtension +
+      sanitizedFilename +
         Date.now() +
-        Math.ceil(Math.random() * 1e5) + // avoid rare name conflict
+        Math.ceil(Math.random() * 1e5) + // Avoid rare name conflict
         fileExtension
     );
   },
 });
 
+// File filter to accept only images (or you can add other types like .pdf, .docx, etc.)
+const fileFilter = (req, file, cb) => {
+  const imageMimeTypes = /image/;
+  const allowedFileTypes = [
+    imageMimeTypes,
+    "application/pdf", // PDF
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
+  ];
+
+  if (
+    allowedFileTypes.some((type) =>
+      file.mimetype.match(type)
+    )
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type! Only images, PDFs, and DOCX files are allowed."), false);
+  }
+};
+
 // Create multer instance with configuration
 const upload = multer({
   storage: storage,
-  fileFilter: function (req, file, cb) {
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Not an image! Please upload an image."), false);
-    }
-  },
+  fileFilter: fileFilter,
 });
 
 module.exports = { upload };
