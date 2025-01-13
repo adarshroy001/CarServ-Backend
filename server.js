@@ -15,7 +15,7 @@ const PageLog = require("./API/Models/pageLogsModel");
 
 dotenv.config();
 const app = express();
-const mongoURI = process.env.MONGODB_URI;
+const mongoURI = process.env.API_APP_MONGODB_URI;
 
 const store = new MongoDBSession({
   uri: mongoURI,
@@ -34,10 +34,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.API_APP_NODE_ENV === "production",
       maxAge: 1000 * 3600 * 24 * 7,
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: process.env.API_APP_NODE_ENV === "production" ? "none" : "lax",
     },
     store,
   })
@@ -45,7 +45,7 @@ app.use(
 
 app.use(
   cors({
-    origin: process.env.CLIENT_SIDE_URL,
+    origin: process.env.API_APP_CLIENT_SIDE_URL,
     credentials: true,
   })
 );
@@ -110,7 +110,7 @@ mongoose
   .then(() => {
     console.log("Connected to mongodb");
     console.log("MongoDB URI:", mongoURI); // Log the URI (make sure to remove this in production)
-    const port = process.env.PORT || 4000;
+    const port = process.env.API_APP_MongoDB_PORT || 4000;
     app.listen(port, () => console.log(`Server running on port ${port}`));
   })
   .catch((error) => {

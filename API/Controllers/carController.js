@@ -728,9 +728,9 @@ const getCar = async (req, res) => {
 
 const getVehicleDataByVRN = async (req, res) => {
   try {
-    const apiKey = process.env.UK_VEHICLE_API_KEY;
+    const apiKey = process.env.API_APP_UK_VEHICLE_API_KEY;
     const vrn = req.params.vrn.replace(/\s/g, "").toUpperCase();
-    const apiUrl = `${process.env.UK_VEHICLE_API_URL}?v=2&api_nullitems=1&auth_apikey=${apiKey}&key_VRM=${vrn}`;
+    const apiUrl = `${process.env.API_APP_UK_VEHICLE_API_URL}?v=2&api_nullitems=1&auth_apikey=${apiKey}&key_VRM=${vrn}`;
 
     const response = await axios.get(apiUrl);
 

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const expireTime = process.env.EMAIL_OTP_EXPIRE_TIME || 600;
+const expireTime = process.env.API_APP_EMAIL_OTP_EXPIRE_TIME || 600;
 
 const otpSchema = new mongoose.Schema({
     otp: {

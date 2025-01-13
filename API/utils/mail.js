@@ -4,12 +4,12 @@ module.exports = {
   sendMail: async (recipient, subject, body, attachments = []) => {
     try {
       const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
+        host: process.env.API_APP_EMAIL_HOST,
+        port: process.env.API_APP_EMAIL_PORT,
         secure: false,
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
+          user: process.env.API_APP_EMAIL_USER,
+          pass: process.env.API_APP_EMAIL_PASSWORD,
         },
       });
 
@@ -18,7 +18,7 @@ module.exports = {
         else console.log(`Success`);
       });
       let options = {
-        from: `"Live Autos" ${process.env.EMAIL_USER}`, // sender address
+        from: `"Live Autos" ${process.env.API_APP_EMAIL_USER}`, // sender address
         to: recipient, // list of receivers
         priority: "high",
         subject: subject,
