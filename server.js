@@ -9,6 +9,9 @@ const userRoutes = require("./API/Routes/userRoutes");
 const carsRoutes = require("./API/Routes/carRoutes");
 const bookingsRoutes = require("./API/Routes/BookingRoutes");
 const buyCarRoutes = require("./API/Routes/buyCarRoutes");
+const servicesRoutes = require("./API/Routes/servicesRoutes");
+const telemetryClient = require("./API/utils/azureLogsConnection");
+const PageLog = require("./API/Models/pageLogsModel");
 
 dotenv.config();
 const app = express();
@@ -52,6 +55,7 @@ app.use("/users", userRoutes);
 app.use("/cars", carsRoutes);
 app.use("/bookings", bookingsRoutes);
 app.use("/buyer", buyCarRoutes);
+app.use("/services", servicesRoutes);
 
 // Add this to test the database connection
 app.get("/test-db", async (req, res) => {
@@ -65,9 +69,40 @@ app.get("/test-db", async (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something broke!");
+
+app.use((req, res, next) => {
+  const startTime = Date.now();
+
+  res.on('finish', async () => {
+      const responseTime = Date.now() - startTime;
+
+      try {
+          await PageLog.create({
+              metricName: 'ApiResponseTime',
+              metricValue: responseTime,
+              properties: {
+                  apiEndpoint: req.originalUrl,
+                  httpMethod: req.method,
+                  statusCode: res.statusCode,
+              },
+          });
+
+          telemetryClient.trackMetric({
+            name: 'ApiResponseTime',
+            value: responseTime,
+            properties: {
+                apiEndpoint: req.originalUrl,
+                httpMethod: req.method,
+                statusCode: res.statusCode,
+            },
+        });
+
+      } catch (error) {
+          console.error('Error logging API response time:', error);
+      }
+  });
+
+  next();
 });
 
 mongoose
