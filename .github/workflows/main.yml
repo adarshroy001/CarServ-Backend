@@ -1,0 +1,43 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+    inputs:
+      environment:
+        description: 'Environment to deploy (prod/uat/dev)'
+        required: true
+      branch:
+        description: 'Branch to deploy'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Application
+        run: |
+          if [ -f package.json ]; then
+            npm run build
+          fi
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_APP_NAME_${{ github.event.inputs.branch | upper }}_API }}
+          publish-profile: ${{ secrets[`AZURE_WEBAPP_${{ github.event.inputs.environment | upper }}_BACKEND_PUBLISH_PROFILE`] }}
+          package: ./build
+
