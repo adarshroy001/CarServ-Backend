@@ -802,6 +802,38 @@ const getList = async (req, res) => {
   }
 };
 
+const getListing = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+
+    // Retrieve the list of cars for the user
+    const carList = await Car.find({
+      owner: new mongoose.Types.ObjectId(userId),
+    });
+
+    // Check if the list is empty
+    if (!carList.length) {
+      return res.status(404).json({ message: "No cars found for this user." });
+    }
+
+    // Optionally format the data
+    const formattedCars = carList.map((car) => ({
+      id: car._id,
+      name: car.name,
+      askingPrice: car.askingPrice,
+      year: car.year,
+      isDeleted: car.isDeleted || false,
+    }));
+
+    // Respond with the formatted car data
+    res.status(200).json(formattedCars);
+  } catch (error) {
+    console.error("Get All Cars Error:", error);
+    res.status(500).json({ message: "An error occurred while fetching cars." });
+  }
+};
+
+
 module.exports = {
   createCar,
   createCarDetails,
@@ -818,4 +850,6 @@ module.exports = {
   getVehicleDataByVRN,
   softDelListing,
   getList,
+  getListing,
+ 
 };

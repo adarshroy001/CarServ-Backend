@@ -116,6 +116,8 @@ router.get("/getLatest", carController.getLatest);
 
 //get carlist..
 router.get("/getList", isAuthenticated, carController.getList);
+//get car add Listing
+router.get("/getCarList", isAuthenticated, carController.getListing);
 
 router.get("/makes", carController.getMakes);
 router.get("/models", carController.getModels);
