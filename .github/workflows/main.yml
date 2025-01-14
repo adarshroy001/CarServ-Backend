@@ -42,6 +42,6 @@ jobs:
         with:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
-          package: .
+          package: ./dist
 
 
