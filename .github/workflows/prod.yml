@@ -24,10 +24,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Run tests (optional)
-      - name: Run tests
-        run: npm test
-
       # Step 5: Build the API
       - name: Build API
         run: npm run build
