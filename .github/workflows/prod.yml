@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Step 4: Clean previous builds (optional)
+      - name: Clean previous builds
+        run: npm run clean
+
       # Step 5: Build the API
       - name: Build API
         run: npm run build
@@ -34,5 +38,6 @@ jobs:
         with:
           app-name: ${{ secrets.AZURE_APP_NAME_PROD_API }} # Azure App Service for API
           publish-profile: ${{ secrets.AZURE_WEBAPP_PROD_BACKEND_PUBLISH_PROFILE }} # Publish profile
-          package: . # Path to the backend project directory
+          package: ./dist # Path to the compiled project directory
+
 
