@@ -28,6 +28,9 @@ jobs:
       - name: Install Dependencies Locally
         run: npm install
 
+      - name: Build
+        run: npm run build
+
       - name: Set Environment Variables for Secrets
         run: |
           ENVIRONMENT=$(echo "${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
