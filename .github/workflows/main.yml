@@ -31,19 +31,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # 4. Build Application
-      # Transpile the API folder into a "dist" directory, leaving server.js untouched
-      - name: Build Application
-        run: |
-          npm run build # This assumes the `build` script is set up in your package.json
-          ls -l dist     # Confirm that the dist folder is created
-
-      # 5. Package Application for Deployment
-      # Include server.js, dist, node_modules, and any other necessary files
-      - name: Package Application
-        run: |
-          zip -r app-deployment.zip \
-          server.js dist node_modules package.json package-lock.json
 
       # 6. Set Environment Variables for Deployment
       - name: Set Environment Variables
@@ -58,7 +45,7 @@ jobs:
         with:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
-          package: ./app-deployment.zip
+          package: .
 
 
 
