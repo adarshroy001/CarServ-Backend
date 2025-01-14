@@ -33,6 +33,10 @@ jobs:
           if [ -f package.json ]; then
             npm run build
           fi
+      - name: Verify Build Output
+        run: |
+          ls -R dist
+
 
       - name: Set Environment Variables for Secrets
         run: |
