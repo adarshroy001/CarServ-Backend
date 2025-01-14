@@ -1,7 +1,7 @@
 name: Manual Deployment
 
 on:
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
     inputs:
       environment:
         description: 'Environment to deploy (prod/uat/dev)'
@@ -28,12 +28,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Application
-        run: |
-          if [ -f package.json ]; then
-            npm run build
-          fi
-
       - name: Set Environment Variables for Secrets
         run: |
           ENVIRONMENT=$(echo "${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
@@ -45,5 +39,4 @@ jobs:
         with:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
-          package: ./dist
-
+          package: .
