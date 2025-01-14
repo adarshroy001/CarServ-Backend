@@ -33,11 +33,20 @@ jobs:
           if [ -f package.json ]; then
             npm run build
           fi
+      - name: Verify Build Output
+        run: |
+          ls -R dist
+
+
+      - name: Set Environment Variables for Secrets
+        run: |
+          ENVIRONMENT=$(echo "${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
+          echo "APP_NAME_SECRET=AZURE_APP_NAME_${ENVIRONMENT}_API" >> $GITHUB_ENV
+          echo "PUBLISH_PROFILE_SECRET=AZURE_WEBAPP_${ENVIRONMENT}_BACKEND_PUBLISH_PROFILE" >> $GITHUB_ENV
 
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.AZURE_APP_NAME_${{ github.event.inputs.branch | upper }}_API }}
-          publish-profile: ${{ secrets[`AZURE_WEBAPP_${{ github.event.inputs.environment | upper }}_BACKEND_PUBLISH_PROFILE`] }}
-          package: ./build
-
+          app-name: ${{ secrets[env.APP_NAME_SECRET] }}
+          publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
+          package: ./dist

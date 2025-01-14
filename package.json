@@ -2,13 +2,13 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node dist/server.js",
     "debug": "nodemon server.js",
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel API -d dist",
+    "build": "babel server.js API -d dist",
     "clean": "rm -rf dist"
   },
   "author": "",
