@@ -37,6 +37,6 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ secrets.AZURE_APP_NAME_PROD_API }} # Azure App Service for API
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API_PROD }} # Publish profile
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PROD_BACKEND_PUBLISH_PROFILE }} # Publish profile
           package: ./ # Path to the backend project directory
 
