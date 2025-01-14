@@ -1,7 +1,7 @@
 name: Manual Deployment
 
 on:
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
     inputs:
       environment:
         description: 'Environment to deploy (prod/uat/dev)'
@@ -33,10 +33,15 @@ jobs:
           if [ -f package.json ]; then
             npm run build
           fi
+
       - name: Verify Build Output
         run: |
           ls -R dist
 
+      - name: Copy Necessary Files to `dist`
+        run: |
+          cp package.json package-lock.json dist/
+          ls -R dist
 
       - name: Set Environment Variables for Secrets
         run: |
