@@ -57,6 +57,10 @@ app.use("/bookings", bookingsRoutes);
 app.use("/buyer", buyCarRoutes);
 app.use("/services", servicesRoutes);
 
+app.get('/health', (req, res) => {
+  res.status(200).send('Healthy');
+});
+
 // Add this to test the database connection
 app.get("/test-db", async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 const appInsights = require('applicationinsights');
 require('dotenv').config();
-const key = process.env.API_APP_AZURE_LOGS_CONNECTION_KEY;
+const key = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
 
 appInsights.setup(key)
     .setAutoCollectRequests(true)
