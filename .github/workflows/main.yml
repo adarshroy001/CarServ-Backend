@@ -34,15 +34,6 @@ jobs:
             npm run build
           fi
 
-      - name: Verify Build Output
-        run: |
-          ls -R dist
-
-      - name: Copy Necessary Files to `dist`
-        run: |
-          cp package.json package-lock.json dist/
-          ls -R dist
-
       - name: Set Environment Variables for Secrets
         run: |
           ENVIRONMENT=$(echo "${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
@@ -54,13 +45,6 @@ jobs:
         with:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
-          package: ./dist
-
-      - name: Run npm install on Azure Server
-        run: |
-          curl -X POST "https://${{ secrets.APP_NAME_SECRET }}.scm.azurewebsites.net/api/command" \
-          -u ${{ secrets.PUBLISH_PROFILE_SECRET }} \
-          -H "Content-Type: application/json" \
-          -d '{"command": "npm install", "dir": "/home/site/wwwroot"}'
+          package: .
 
 
