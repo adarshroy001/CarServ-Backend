@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Dependencies
+      - name: Install Dependencies Locally
         run: npm install
 
       - name: Build Application
@@ -55,3 +55,11 @@ jobs:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
           package: ./dist
+
+      - name: Run npm install on Azure Server
+        run: |
+          curl -X POST "https://${{ secrets[env.APP_NAME_SECRET] }}.scm.azurewebsites.net/api/command" \
+          -u ${{ secrets[env.PUBLISH_PROFILE_SECRET] }} \
+          -H "Content-Type: application/json" \
+          -d '{"command": "npm install", "dir": "/home/site/wwwroot"}'
+
