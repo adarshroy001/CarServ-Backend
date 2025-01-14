@@ -8,8 +8,7 @@
     "debug": "nodemon server.js",
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run build",
-
+    "build": "babel . -d dist --ignore node_modules",
     "clean": "rm -rf dist"
   },
   "author": "",
