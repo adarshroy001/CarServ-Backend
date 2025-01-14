@@ -58,8 +58,9 @@ jobs:
 
       - name: Run npm install on Azure Server
         run: |
-          curl -X POST "https://${{ secrets[env.APP_NAME_SECRET] }}.scm.azurewebsites.net/api/command" \
-          -u ${{ secrets[env.PUBLISH_PROFILE_SECRET] }} \
+          curl -X POST "https://${{ secrets.APP_NAME_SECRET }}.scm.azurewebsites.net/api/command" \
+          -u ${{ secrets.PUBLISH_PROFILE_SECRET }} \
           -H "Content-Type: application/json" \
           -d '{"command": "npm install", "dir": "/home/site/wwwroot"}'
+
 
