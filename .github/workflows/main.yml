@@ -31,9 +31,12 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # 4. Zip Application
-      - name: Zip Application
-        run: zip -r app.zip
+      # 5. Build Application
+      - name: Build Application
+        run: |
+          if [ -f package.json ]; then
+            npm run build
+          fi
 
       # 5. Set Environment Variables for Deployment
       - name: Set Environment Variables
@@ -48,7 +51,7 @@ jobs:
         with:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
-          package: app.zip
+          package: dist
 
 
 

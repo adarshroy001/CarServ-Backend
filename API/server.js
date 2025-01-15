@@ -5,13 +5,13 @@ const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
 const dotenv = require("dotenv");
 
-const userRoutes = require("./API/Routes/userRoutes");
-const carsRoutes = require("./API/Routes/carRoutes");
-const bookingsRoutes = require("./API/Routes/BookingRoutes");
-const buyCarRoutes = require("./API/Routes/buyCarRoutes");
-const servicesRoutes = require("./API/Routes/servicesRoutes");
-const telemetryClient = require("./API/utils/azureLogsConnection");
-const PageLog = require("./API/Models/pageLogsModel");
+const userRoutes = require("./Routes/userRoutes");
+const carsRoutes = require("./Routes/carRoutes");
+const bookingsRoutes = require("./Routes/BookingRoutes");
+const buyCarRoutes = require("./Routes/buyCarRoutes");
+const servicesRoutes = require("./Routes/servicesRoutes");
+const telemetryClient = require("./utils/azureLogsConnection");
+const PageLog = require("./Models/pageLogsModel");
 
 dotenv.config();
 const app = express();
