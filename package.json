@@ -8,8 +8,7 @@
     "debug": "nodemon server.js",
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel API -d dist",
-    "clean": "rm -rf dist"
+    "clean": "rimraf dist"
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +18,7 @@
     "bcrypt": "^5.1.1",
     "connect-mongodb-session": "^5.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "mongoose": "^8.0.2",
@@ -29,9 +28,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.26.4",
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "rimraf": "^6.0.1"
   }
 }

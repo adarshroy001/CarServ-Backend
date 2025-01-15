@@ -31,21 +31,24 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      # 4. Zip Application
+      - name: Zip Application
+        run: zip -r app.zip
 
-      # 6. Set Environment Variables for Deployment
+      # 5. Set Environment Variables for Deployment
       - name: Set Environment Variables
         run: |
           ENVIRONMENT=$(echo "${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
           echo "APP_NAME_SECRET=AZURE_APP_NAME_${ENVIRONMENT}_BACKEND" >> $GITHUB_ENV
           echo "PUBLISH_PROFILE_SECRET=AZURE_WEBAPP_${ENVIRONMENT}_BACKEND_PUBLISH_PROFILE" >> $GITHUB_ENV
 
-      # 7. Deploy to Azure App Service
+      # 6. Deploy to Azure App Service
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}
-          package: .
+          package: app.zip
 
 
 
