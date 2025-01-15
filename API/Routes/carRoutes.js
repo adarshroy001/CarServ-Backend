@@ -52,14 +52,14 @@ const carController = require("../Controllers/carController.js");
 router.post(
   "/create",
   isAuthenticated,
-  upload.fields([{ name: "firstPageImages", maxCount: 10 }]),
+  upload.fields([{ name: "images", maxCount: 10 }]),
   carController.createCar
 );
 router.post(
   "/createDetails",
   isAuthenticated,
   upload.fields([
-    { name: "firstPageImages", maxCount: 10 },
+    { name: "images", maxCount: 10 },
     { name: "detailsImages", maxCount: 10 },
   ]),
   carController.createCarDetails
@@ -68,7 +68,7 @@ router.post(
   "/createCertify",
   isAuthenticated,
   upload.fields([
-    { name: "firstPageImages", maxCount: 10 },
+    { name: "images", maxCount: 10 },
     { name: "detailsImages", maxCount: 10 },
     { name: "carImages", maxCount: 15 },
     { name: "serviceRecords", maxCount: 10 },
@@ -81,7 +81,7 @@ router.post(
   "/createAdvertise",
   isAuthenticated,
   upload.fields([
-    { name: "firstPageImages", maxCount: 10 },
+    { name: "images", maxCount: 10 },
     { name: "detailsImages", maxCount: 10 },
     { name: "carImages", maxCount: 15 },
     { name: "serviceRecords", maxCount: 10 },

@@ -110,6 +110,11 @@ const carSchema = new mongoose.Schema({
     exported: Boolean,
     imported: Boolean,
   },
+ 
+  shortDescription: { type: String, required: true},
+  detailedDescription: { type: String, required: true },
+  grade : {type:Number, require:true},
+
   isDeleted: { type: Boolean, default: false },
 
   // Embed the sub-models

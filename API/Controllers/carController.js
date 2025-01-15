@@ -17,7 +17,7 @@ const createCar = async (req, res) => {
     }
 
     // Process image URLs
-    const imageUrls = (req.files?.firstPageImages || []).map(
+    const imageUrls = (req.files?.images || []).map(
       (file) => `/images/${file.filename}`
     );
 
@@ -50,6 +50,9 @@ const createCar = async (req, res) => {
       images: imageUrls,
       datePosted: first.datePosted || new Date(),
       owner: req.session?.user?._id,
+      shortDescription: first.shortDescription,
+      detailedDescription: first.detailedDescription,
+      grade: Number(first.grade)
     };
 
     // Save to the database
@@ -79,7 +82,7 @@ const createCarDetails = async (req, res) => {
     }
 
     // Process image URLs
-    const imageUrls = (req.files?.firstPageImages || []).map(
+    const imageUrls = (req.files?.images || []).map(
       (file) => `/images/${file.filename}`
     );
     const imageUrls1 = (req.files?.detailsImages || []).map(
@@ -115,6 +118,9 @@ const createCarDetails = async (req, res) => {
       images: imageUrls,
       datePosted: first.datePosted || new Date(),
       owner: req.session?.user?._id,
+      shortDescription: first.shortDescription,
+      detailedDescription: first.detailedDescription,
+      grade: Number(first.grade)
     };
 
     const parsedFeatures = JSON.parse(first.features);
@@ -157,7 +163,7 @@ const createCarCertify = async (req, res) => {
     }
 
     // Process image URLs
-    const imageUrls = (req.files?.firstPageImages || []).map(
+    const imageUrls = (req.files?.images || []).map(
       (file) => `/images/${file.filename}`
     );
     const imageUrls1 = (req.files?.detailsImages || []).map(
@@ -205,6 +211,9 @@ const createCarCertify = async (req, res) => {
       images: imageUrls,
       datePosted: first.datePosted || new Date(),
       owner: req.session?.user?._id,
+      shortDescription: first.shortDescription,
+      detailedDescription: first.detailedDescription,
+      grade: Number(first.grade)
     };
 
     const parsedFeatures = JSON.parse(first.features);
@@ -264,7 +273,7 @@ const createCarAdvertise = async (req, res) => {
     }
 
     // Process image URLs
-    const imageUrls = (req.files?.firstPageImages || []).map(
+    const imageUrls = (req.files?.images || []).map(
       (file) => `/images/${file.filename}`
     );
     const imageUrls1 = (req.files?.detailsImages || []).map(
@@ -312,6 +321,9 @@ const createCarAdvertise = async (req, res) => {
       images: imageUrls,
       datePosted: first.datePosted || new Date(),
       owner: req.session?.user?._id,
+      shortDescription: first.shortDescription,
+      detailedDescription: first.detailedDescription,
+      grade: Number(first.grade)
     };
 
     const parsedFeatures = JSON.parse(first.features);
@@ -628,7 +640,7 @@ const deleteCar = async (req, res) => {
 // Function for retrieving a list of all cars
 const getAllCars = async (req, res) => {
   try {
-    const carList = await Car.find({});
+    const carList = await Car.find({}, '_id');
     // console.log(
     //   "Retrieved cars:",
     //   // carList.map((car) => ({
