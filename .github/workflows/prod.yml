@@ -3,41 +3,45 @@ name: Deploy API to Production
 on:
   push:
     branches:
-      - main  # Trigger deployment on push to main branch
+      - main
 
 jobs:
   deploy-api:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
+      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js (Node.js 20 LTS)
+      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # Step 3: Install dependencies
+      # Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # Step 4: Clean previous builds (optional)
+      # Clean previous builds
       - name: Clean previous builds
         run: npm run clean
 
-      # Step 5: Build the API
+      # Build API
       - name: Build API
         run: npm run build
 
-      # Step 6: Deploy to Azure App Service
+      # Verify build output
+      - name: Verify build output
+        run: ls -R ./dist
+
+      # Deploy to Azure App Service
       - name: Deploy API to Azure
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.AZURE_APP_NAME_PROD_API }} # Azure App Service for API
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PROD_BACKEND_PUBLISH_PROFILE }} # Publish profile
-          package: ./dist # Path to the compiled project directory
+          app-name: ${{ secrets.AZURE_APP_NAME_PROD_API }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PROD_BACKEND_PUBLISH_PROFILE }}
+          package: ./dist
 
 
