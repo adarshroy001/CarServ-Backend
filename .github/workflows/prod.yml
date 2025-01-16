@@ -42,6 +42,6 @@ jobs:
         with:
           app-name: ${{ secrets.AZURE_APP_NAME_PROD_API }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PROD_BACKEND_PUBLISH_PROFILE }}
-          package: ./
+          package: ./dist
 
 
