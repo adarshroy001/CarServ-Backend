@@ -1,9 +1,7 @@
 name: Deploy API to Production
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch: # Allows manual trigger without inputs
 
 jobs:
   deploy-api:
