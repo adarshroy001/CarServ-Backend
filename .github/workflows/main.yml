@@ -8,7 +8,6 @@ on:
         required: true
         type: choice # Specify input type as choice for dropdown
         options: # Define the dropdown options
-          - prod
           - uat
           - dev
 
