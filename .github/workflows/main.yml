@@ -3,12 +3,14 @@ name: Manual Deployment
 on:
   workflow_dispatch: # Allows manual trigger
     inputs:
-      environment:
+      environment: # Updated to include a dropdown
         description: 'Environment to deploy (prod/uat/dev)'
         required: true
-      branch:
-        description: 'Branch to deploy'
-        required: true
+        type: choice # Specify input type as choice for dropdown
+        options: # Define the dropdown options
+          - prod
+          - uat
+          - dev
 
 jobs:
   deploy:
@@ -18,8 +20,6 @@ jobs:
       # 1. Checkout code
       - name: Checkout Code
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.branch }}
 
       # 2. Setup Node.js
       - name: Setup Node.js
