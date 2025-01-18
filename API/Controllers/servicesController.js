@@ -1,3 +1,4 @@
+const newsSubscriber = require("../Models/newsLetterSubscriber");
 const offersModel = require("../Models/offersModel");
 const PageLog = require("../Models/pageLogsModel");
 const telemetryClient = require("../utils/azureLogsConnection");
@@ -77,5 +78,20 @@ module.exports = {
             console.error("Error fetching offer by pageName:", error);
             res.status(500).json({ error: "Internal server error" });
         }
+    },
+    addSubscriptionEmail: async (req , res) => {
+        const email = req.body.email;
+        if(!email) {
+            return res.status(400).json({ success: false, message: "Please enter an email address" });
+        }
+        
+        const alreadyExist = await newsSubscriber.findOne({ email });
+        if(alreadyExist) {
+            return res.status(200).json({ success: true, message: "Already subscribed" });
+        }
+
+        const newSubscriber = new newsSubscriber({ email });
+        await newSubscriber.save();
+        return res.status(200).json({ success: true, message: "Thank you for subscribing!" });
     }
 }

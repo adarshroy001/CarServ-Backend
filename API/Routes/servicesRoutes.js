@@ -16,5 +16,7 @@ router.post('/addoffer' , controller.addOffer);
 //api to get offers by pageName
 router.get('/getoffers/:pagename' , controller.getofferbypagename);
 
+//api to add subscribed user email
+router.post('/addsubscriptionemail' , controller.addSubscriptionEmail);
 
 module.exports = router;

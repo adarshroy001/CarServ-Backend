@@ -126,8 +126,8 @@ module.exports = {
   },
   sendOTP: async (req, res) => {
     try {
-      const id = req.session.user._id;
-      const recipient = req.session.user.email;
+      const recipient = req.body.email;
+      const userId = req.body.userId;
       const subject = "OTP for email verification";
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const body = `
@@ -136,7 +136,7 @@ module.exports = {
       `;
 
       // Find the OTP document by userId
-      let otpDoc = await Otp.findOne({ userId : id });
+      let otpDoc = await Otp.findOne({ userId });
 
       if (otpDoc) {
         otpDoc.otp = otp;
@@ -144,7 +144,7 @@ module.exports = {
       } else {
         otpDoc = new Otp({
           otp: otp,
-          userId: id,
+          userId: userId,
           createdAt: new Date()
         });
       }
@@ -159,8 +159,7 @@ module.exports = {
   },
   verifyOTP: async (req, res) => {
     try {
-      const { otp } = req.body;
-      const userId = req.session.user._id;
+      const { otp , userId } = req.body;
       const otpDoc = await Otp.findOne({ userId });
 
       if(!userId){
