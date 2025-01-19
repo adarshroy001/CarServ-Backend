@@ -14,23 +14,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # Step 1: Checkout code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      - name: npm install, build, and test
+      # Step 3: Install dependencies and build the application
+      - name: Install dependencies and build
         run: |
           npm install
           npm run build --if-present
           npm run test --if-present || echo "Skipping tests as none are specified"
 
+      # Step 4: Package the build artifacts into a zip file
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: |
+          mkdir -p artifact
+          cp -r $(ls -A | grep -v artifact) artifact/
+          cd artifact
+          zip -r ../release.zip ./*
+          cd ..
 
-      - name: Upload artifact for deployment job
+      # Step 5: Upload the zip artifact for deployment
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -43,29 +54,35 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # Required for JWT
 
     steps:
+      # Step 1: Download the build artifact
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
+      # Step 2: Unzip the artifact
+      - name: Unzip artifact
         run: unzip release.zip
-      
+
+      # Step 3: List the extracted files for verification
+      - name: List extracted files
+        run: ls -R
+
+      # Step 4: Login to Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2B215158AF224DB09D6F505D4B8072CB }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0478FC42D9604A09A4F9B970E115FB76 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_98DA6C74C7CC42ED8F34E40640DF7C7D }}
-
-      - name: 'Deploy to Azure Web App'
+      # Step 5: Deploy the application to Azure App Service
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'liveautos-dev-api'
           slot-name: 'Production'
           package: .
-          
