@@ -49,27 +49,43 @@ const router = express.Router();
 // Import the controller object
 const carController = require("../Controllers/carController.js");
 
-router.post(
-  "/create",
+// router.post(
+//   "/create",
+//   isAuthenticated,
+//   upload.fields([{ name: "images", maxCount: 10 }]),
+//   carController.createCar
+// );
+router.put(
+  "/create/:id",
   isAuthenticated,
   upload.fields([{ name: "images", maxCount: 10 }]),
-  carController.createCar
+  carController.createOrUpdateCar
 );
+
+router.put(
+  "/UpdateCarDetails/:id",
+  isAuthenticated,
+  upload.fields([{ name: "images", maxCount: 10 }]),
+  upload.fields([{ name: "images1", maxCount: 10 }]),
+  carController.UpdateCarDetails
+);
+
 router.post(
   "/createDetails",
   isAuthenticated,
   upload.fields([
     { name: "images", maxCount: 10 },
-    { name: "detailsImages", maxCount: 10 },
+    { name: "detailsImages", maxCount: 20 },
   ]),
   carController.createCarDetails
 );
+
 router.post(
   "/createCertify",
   isAuthenticated,
   upload.fields([
     { name: "images", maxCount: 10 },
-    { name: "detailsImages", maxCount: 10 },
+    { name: "detailsImages", maxCount: 20 },
     { name: "carImages", maxCount: 15 },
     { name: "serviceRecords", maxCount: 10 },
     { name: "logbook", maxCount: 10 },
@@ -77,12 +93,13 @@ router.post(
   ]),
   carController.createCarCertify
 );
+
 router.post(
   "/createAdvertise",
   isAuthenticated,
   upload.fields([
     { name: "images", maxCount: 10 },
-    { name: "detailsImages", maxCount: 10 },
+    { name: "detailsImages", maxCount: 20 },
     { name: "carImages", maxCount: 15 },
     { name: "serviceRecords", maxCount: 10 },
     { name: "logbook", maxCount: 10 },

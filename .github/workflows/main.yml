@@ -45,14 +45,7 @@ jobs:
         run: ls -R ./dist
       # 5. Set Environment Variables for Deployment
       - name: Set Environment Variables
-        run: |
-          ENVIRONMENT=$(echo "${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
-          echo "APP_NAME_SECRET=AZURE_APP_NAME_${ENVIRONMENT}_BACKEND" >> $GITHUB_ENV
-          echo "PUBLISH_PROFILE_SECRET=AZURE_WEBAPP_${ENVIRONMENT}_BACKEND_PUBLISH_PROFILE" >> $GITHUB_ENV
-
-      # 6. Deploy to Azure App Service
-      - name: Deploy to Azure
-        uses: azure/webapps-deploy@v2
+@@ -48,7 +51,7 @@
         with:
           app-name: ${{ secrets[env.APP_NAME_SECRET] }}
           publish-profile: ${{ secrets[env.PUBLISH_PROFILE_SECRET] }}

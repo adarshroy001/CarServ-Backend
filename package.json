@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node API/server.js",
+    "start": "node server.js",
     "debug": "nodemon server.js",
     "dev": "nodemon server.js",
     "build": "babel API -d dist",
@@ -19,7 +19,7 @@
     "bcrypt": "^5.1.1",
     "connect-mongodb-session": "^5.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "mongoose": "^8.0.2",

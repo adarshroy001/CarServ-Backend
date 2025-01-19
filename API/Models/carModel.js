@@ -48,7 +48,7 @@ const detailsSchema = new mongoose.Schema({
   },
   images: [{ type: String }],
   knownIssues: { type: String },
-  majorRepairs: [{ type: String }],
+  majorRepairs: [String]
 });
 
 // Car Schema
@@ -113,7 +113,7 @@ const carSchema = new mongoose.Schema({
  
   shortDescription: { type: String, required: true},
   detailedDescription: { type: String, required: true },
-  grade : {type:Number, require:true},
+  grade : {type: Number, require:true},
 
   isDeleted: { type: Boolean, default: false },
 

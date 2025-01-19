@@ -46,7 +46,7 @@ const createCar = async (req, res) => {
       phoneCommunication: first.phoneCommunication === "true",
       emailCommunication: first.emailCommunication === "true",
       agreeToInspection: first.agreeToInspection === "true",
-      dateOfRegistration: first.dateOfRegistration,
+     dateOfRegistration: first.dateOfRegistration.split("T")[0],
       images: imageUrls,
       datePosted: first.datePosted || new Date(),
       owner: req.session?.user?._id,
@@ -54,6 +54,8 @@ const createCar = async (req, res) => {
       detailedDescription: first.detailedDescription,
       grade: Number(first.grade)
     };
+
+    
 
     // Save to the database
     const newCar = new Car(carData);
@@ -69,6 +71,117 @@ const createCar = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+const createOrUpdateCar = async (req, res) => {
+  try {
+    const carId = req.params.id;
+    const first = req.body;
+    console.log("kk", first);
+
+    // Validate required fields
+    if (!first.name || !first.askingPrice || !first.year) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const { images: oldImagePath } = req.body;
+
+    // Parse `oldImagePath` if it's a stringified array
+    let parsedOldImages = [];
+    if (oldImagePath) {
+      if (typeof oldImagePath === 'string') {
+        // Check if the string starts with `[` to identify a JSON array
+        if (oldImagePath.trim().startsWith('[')) {
+          try {
+            parsedOldImages = JSON.parse(oldImagePath); // Convert stringified array to array
+          } catch (err) {
+            console.error('Failed to parse images:', err.message);
+            return res.status(400).json({ error: 'Invalid format for images field' });
+          }
+        } else {
+          // Treat as a single image string if it's not a JSON array
+          parsedOldImages = [oldImagePath];
+        }
+      } else if (Array.isArray(oldImagePath)) {
+        parsedOldImages = oldImagePath; // Use directly if it's already an array
+      } else {
+        parsedOldImages = [oldImagePath]; // Treat as a single image string
+      }
+    }
+    
+    // Handle new image files uploaded via `req.files`
+    const newImageUrls = (req.files?.images || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    
+    // Combine old and new images
+    const imageUrls = [...parsedOldImages, ...newImageUrls];
+    // Prepare car data
+    const carData = {
+      name: first.name,
+      askingPrice: Number(first.askingPrice),
+      year: Number(first.year),
+      status: first.status,
+      condition: first.condition,
+      transmission: first.transmission,
+      fuel: first.fuelType,
+      color: first.color,
+      mileage: Number(first.mileage),
+      engineSize: Number(first.engineSize),
+      gearbox: first.gearbox,
+      owners: Number(first.owners),
+      serviceHistory: first.serviceHistory,
+      bodyType: first.bodyType,
+      seats: Number(first.seats),
+      doors: Number(first.doors),
+      numberPlate: first.numberPlate,
+      email: first.email,
+      phone: first.phone,
+      postcode: first.postcode,
+      phoneCommunication: first.phoneCommunication === "true",
+      emailCommunication: first.emailCommunication === "true",
+      agreeToInspection: first.agreeToInspection === "true",
+      dateOfRegistration: first.dateOfRegistration.split("T")[0],
+      images: imageUrls,
+      datePosted: first.datePosted || new Date(),
+      owner: req.session?.user?._id,
+      shortDescription: first.shortDescription,
+      detailedDescription: first.detailedDescription,
+      grade: Number(first.grade)
+    };
+
+    // If an ID is provided, update the car, otherwise create a new one
+    if (carId ) {
+      // Update existing car
+      const updatedCar = await Car.findByIdAndUpdate(carId, carData, { new: true, runValidators: true });
+
+      if (!updatedCar) {
+        return res.status(404).json({ error: "Car not found." });
+      }
+
+      res.status(200).json({
+        status: "success",
+        data: { car: updatedCar.toObject() },
+      });
+    } else {
+      // Create new car
+      const newCar = new Car(carData);
+      const savedCar = await newCar.save();
+
+      res.status(201).json({
+        status: "success",
+        data: { car: savedCar.toObject() },
+      });
+    }
+  } catch (error) {
+    console.error("Error processing car:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
+
 
 const createCarDetails = async (req, res) => {
   try {
@@ -153,9 +266,6 @@ const createCarDetails = async (req, res) => {
 const createCarCertify = async (req, res) => {
   try {
     const first = req.body;
-    const first1 = req.files;
-    // console.log("i",first1)
-    console.log("i111", first1);
 
     // Validate required fields
     if (!first.name || !first.askingPrice || !first.year) {
@@ -260,12 +370,148 @@ const createCarCertify = async (req, res) => {
   }
 };
 
+
+
+
+const UpdateCarDetails = async (req, res) => {
+  try {
+    const first = req.body;
+    const first1 = req.files;
+    console.log("i", first);
+
+    // Validate required fields
+    if (!first.name || !first.askingPrice || !first.year) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const { images1: oldImagePath } = req.body;
+
+    // Parse `oldImagePath` if it's a stringified array
+    let parsedOldImages = [];
+    if (oldImagePath) {
+      if (typeof oldImagePath === 'string') {
+        // Check if the string starts with `[` to identify a JSON array
+        if (oldImagePath.trim().startsWith('[')) {
+          try {
+            parsedOldImages = JSON.parse(oldImagePath); // Convert stringified array to array
+          } catch (err) {
+            console.error('Failed to parse images:', err.message);
+            return res.status(400).json({ error: 'Invalid format for images field' });
+          }
+        } else {
+          // Treat as a single image string if it's not a JSON array
+          parsedOldImages = [oldImagePath];
+        }
+      } else if (Array.isArray(oldImagePath)) {
+        parsedOldImages = oldImagePath; // Use directly if it's already an array
+      } else {
+        parsedOldImages = [oldImagePath]; // Treat as a single image string
+      }
+    }
+    
+    // Handle new image files uploaded via `req.files`
+    const newImageUrls = (req.files?.images || []).map(
+      (file) => `/images/${file.filename}`
+    );
+    
+    // Combine old and new images
+    const imageUrls = [...parsedOldImages, ...newImageUrls];
+
+
+
+    
+    // Process image URLs
+    // const imageUrls = (req.files?.images || []).map(
+    //   (file) => `/images/${file.filename}`
+    // );
+    // const imageUrls1 = (req.files?.detailsImages || []).map(
+    //   (file) => `/images/${file.filename}`
+    // );
+
+    // Prepare car data
+    const carData = {
+      name: first.name,
+      askingPrice: Number(first.askingPrice),
+      year: Number(first.year),
+      status: first.status,
+      condition: first.condition,
+      transmission: first.transmission,
+      fuel: first.fuelType,
+      color: first.color,
+      mileage: Number(first.mileage),
+      engineSize: Number(first.engineSize),
+      gearbox: first.gearbox,
+      owners: Number(first.owners),
+      serviceHistory: first.serviceHistory,
+      bodyType: first.bodyType,
+      seats: Number(first.seats),
+      doors: Number(first.doors),
+      numberPlate: first.numberPlate,
+      email: first.email,
+      phone: first.phone,
+      postcode: first.postcode,
+      phoneCommunication: first.phoneCommunication === "true",
+      emailCommunication: first.emailCommunication === "true",
+      agreeToInspection: first.agreeToInspection === "true",
+      dateOfRegistration: first.dateOfRegistration,
+      images: imageUrls,
+      datePosted: first.datePosted || new Date(),
+      owner: req.session?.user?._id,
+      shortDescription: first.shortDescription,
+      detailedDescription: first.detailedDescription,
+      grade: Number(first.grade),
+    };
+
+    const parsedFeatures = JSON.parse(first.features);
+    const DetailsData = {
+      features: parsedFeatures,
+      knownIssues: first.knownIssues,
+      majorRepairs: first.majorRepairs,
+      images: imageUrls1,
+    };
+
+    const combinedData = {
+      ...carData,
+      details: DetailsData,
+    };
+
+    const { carId } = req.params; // Assuming carId is in the route parameters
+
+    if (carId) {
+      // Update existing car
+      const updatedCar = await Car.findByIdAndUpdate(carId, combinedData, { new: true, runValidators: true });
+
+      if (!updatedCar) {
+        return res.status(404).json({ error: "Car not found." });
+      }
+
+      res.status(200).json({
+        status: "success",
+        data: { car: updatedCar.toObject() },
+      });
+    } else {
+      // Create new car
+      const newCar = new Car(combinedData);
+      const savedCar = await newCar.save();
+
+      res.status(201).json({
+        status: "success",
+        data: { car: savedCar.toObject() },
+      });
+    }
+  } catch (error) {
+    console.error("Error processing car:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 const createCarAdvertise = async (req, res) => {
   try {
     const first = req.body;
     const first1 = req.files;
     // console.log("i",first1)
-    console.log("i111", first1);
+    // console.log("i111", first1);
 
     // Validate required fields
     if (!first.name || !first.askingPrice || !first.year) {
@@ -369,7 +615,7 @@ const createCarAdvertise = async (req, res) => {
     // Respond with saved car data
     res.status(201).json({
       status: "success",
-      data: { car: savedCar.toObject() },
+      // data: { car: savedCar.toObject() },
     });
   } catch (error) {
     console.error("Error saving car:", error);
@@ -640,7 +886,7 @@ const deleteCar = async (req, res) => {
 // Function for retrieving a list of all cars
 const getAllCars = async (req, res) => {
   try {
-    const carList = await Car.find({}, '_id');
+    const carList = await Car.find({});
     // console.log(
     //   "Retrieved cars:",
     //   // carList.map((car) => ({
@@ -863,5 +1109,6 @@ module.exports = {
   softDelListing,
   getList,
   getListing,
- 
+  createOrUpdateCar,
+  UpdateCarDetails
 };
