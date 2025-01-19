@@ -68,8 +68,8 @@ module.exports = {
     },
     getofferbypagename: async (req , res) => {
         try {
-            const { pageName } = req.query;
-            const offer = await offersModel.findOne({ pageName });
+            const { pagename } = req.params;
+            const offer = await offersModel.findOne({ pageName:pagename });
             if (!offer) {
                 return res.status(404).json({ success: false, message: "Offer not found" });
             }
