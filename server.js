@@ -115,7 +115,7 @@ mongoose
   .then(() => {
     console.log("Connected to mongodb");
     console.log("MongoDB URI:", mongoURI); // Log the URI (make sure to remove this in production)
-    const port = process.env.API_APP_MongoDB_PORT || 4000;
+    const port = process.env.PORT || 4000;
     app.listen(port, () => console.log(`Server running on port ${port}`));
   })
   .catch((error) => {
